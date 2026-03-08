@@ -1667,113 +1667,137 @@ async function runDiscoveryEngine(apiKey) {
   var prov = currentSearchParams.prov;
   var pipelineNames = leads.map(function(l) { return (l.company || '').toLowerCase().trim(); });
 
-  agentLog('Discovery Engine: searching ' + ind + ' in ' + city, 'agent');
+  agentLog('Discovery Engine: searching ' + ind + ' in ' + city + ', ' + prov, 'agent');
 
-  var promptLines = [
-    'You are a South African business intelligence agent. Search the web RIGHT NOW to find real, existing businesses.',
-    'Task: Find 10-15 REAL ' + ind + ' businesses actually located in ' + city + ', ' + prov + ', South Africa.',
-    'Search these sources: yellowpages.co.za, google.com/maps, linkedin.com/company, brabys.com, cylex-sa.co.za.',
-    'For each business you find, verify it exists by checking at least one source.',
-    'Return ONLY a JSON array. Each object:',
-    '{"name":"exact business trading name","address":"street address or area in ' + city + '","phone":"SA phone number","contact":"owner or manager name if found","industry":"' + ind + '","website":"https://... if found, else empty string","linkedin":"https://linkedin.com/company/... if found, else empty string","source":"exact URL or site name where you verified this business","confidence":85,"source_id":"businessname-city-slug"}',
-    'STRICT RULES: Only include businesses you actually found via web search. No invented names. No placeholder data.',
-    'Skip these (already in pipeline): ' + JSON.stringify(pipelineNames.slice(0, 20)),
-    'Return ONLY the JSON array. No markdown. No other text.'
-  ];
-  var prompt = promptLines.join('\n');
-  var requestBody = JSON.stringify({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 4000,
-    tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-    messages: [{ role: 'user', content: prompt }]
-  });
-
-  // Try direct call first (works on Vercel/HTTPS)
-  var data = null;
-  var lastError = '';
+  var prompt = 'Find 10 real ' + ind + ' businesses in ' + city + ', ' + prov + ', South Africa. '
+    + 'Search yellowpages.co.za, google maps, linkedin.com/company, brabys.com. '
+    + 'Return ONLY a valid JSON array, no markdown. Each item: '
+    + '{"name":"Company Name","address":"address","phone":"0xx xxx xxxx","contact":"person name","industry":"' + ind + '","website":"url or empty","linkedin":"url or empty","source":"where found","confidence":80,"source_id":"slug"}. '
+    + 'Only real businesses you can verify. Skip: ' + JSON.stringify(pipelineNames.slice(0,10)) + '. '
+    + 'Return ONLY the JSON array.';
 
   try {
-    var res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: requestBody
-    });
-    data = await res.json();
-    if (data.error && data.error.type !== 'authentication_error') {
-      // Non-auth error — try proxy
-      lastError = data.error.message;
-      data = null;
+    var data = await callAnthropicWithTools(apiKey, prompt);
+    if (!data) { renderError('Connection failed. Check internet and try again.', false); return; }
+    if (data.error) {
+      if (data.error.type === 'authentication_error') {
+        try { localStorage.removeItem('lf_apikey'); } catch(e) {}
+        renderError('API key invalid. Please re-enter.', true);
+      } else {
+        renderError('API error: ' + data.error.message, false);
+      }
+      return;
     }
-  } catch(e) {
-    lastError = e.message;
-    agentLog('Direct API blocked (local file) — trying proxy...', 'warn');
-  }
 
-  // Fallback: proxy (works from local file:// and when CORS blocks direct)
-  if (!data) {
-    try {
-      var proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent('https://api.anthropic.com/v1/messages');
-      var res2 = await fetch(proxyUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true'
-        },
-        body: requestBody
+    // Extract text from ALL content blocks including after tool use
+    var text = '';
+    (data.content || []).forEach(function(b) { if (b.type === 'text') text += b.text; });
+    text = text.replace(/```json/gi,'').replace(/```/g,'').trim();
+    var a1 = text.indexOf('['), a2 = text.lastIndexOf(']');
+
+    if (a1 === -1 || a2 === -1) {
+      // Try to extract from tool results
+      (data.content || []).forEach(function(b) {
+        if (b.type === 'tool_result' || b.type === 'tool_use') {
+          var s = JSON.stringify(b);
+          var i1 = s.indexOf('['), i2 = s.lastIndexOf(']');
+          if (i1 > -1 && i2 > i1) text = s.slice(i1, i2+1);
+        }
       });
-      data = await res2.json();
-      agentLog('Using proxy — leads loading...', 'info');
-    } catch(e2) {
-      lastError = e2.message;
+      a1 = text.indexOf('['); a2 = text.lastIndexOf(']');
     }
-  }
 
-  if (!data) {
-    agentLog('Both direct and proxy failed: ' + lastError, 'warn');
-    renderError('Could not reach Anthropic API. If using a local file, please open leadflow-lovat.vercel.app instead.', false);
-    return;
-  }
+    if (a1 === -1) { renderError('No leads found for this search. Try a different city or industry.', false); return; }
+    text = text.slice(a1, a2+1);
 
-  if (data.error) {
-    agentLog('API error: ' + data.error.message, 'warn');
-    if (data.error.type === 'authentication_error') {
-      try { localStorage.removeItem('lf_apikey'); } catch(e) {}
-      renderError('API key invalid or expired. Please re-enter your key.', true);
-    } else {
-      renderError(data.error.message, false);
-    }
-    return;
-  }
-
-  var text = '';
-  (data.content || []).forEach(function(block) {
-    if (block.type === 'text') text += block.text;
-  });
-  text = text.replace(/```json/gi, '').replace(/```/g, '').trim();
-  var a1 = text.indexOf('['), a2 = text.lastIndexOf(']');
-  if (a1 === -1 || a2 === -1) {
-    renderError('AI returned no results for this search. Try a different industry or city.', false);
-    return;
-  }
-  text = text.slice(a1, a2 + 1);
-
-  try {
     var businesses = JSON.parse(text);
-    if (!Array.isArray(businesses) || businesses.length === 0) throw new Error('Empty');
+    if (!Array.isArray(businesses) || businesses.length === 0) throw new Error('empty');
     setModuleStatus('mod-discovery', businesses.length + ' found', 'green');
-    agentLog('AI found ' + businesses.length + ' candidates', 'agent');
+    agentLog('Found ' + businesses.length + ' candidates — verifying...', 'agent');
     runVerificationEngine(businesses, pipelineNames);
   } catch(err) {
-    renderError('Search returned unexpected data. Try again.', false);
+    agentLog('Discovery error: ' + err.message, 'warn');
+    renderError('Search failed: ' + err.message, false);
   }
 }
+
+// Handles the tool-use loop: sends message, follows tool_use turns, returns final response
+async function callAnthropicWithTools(apiKey, userPrompt) {
+  var messages = [{ role: 'user', content: userPrompt }];
+  var headers = {
+    'Content-Type': 'application/json',
+    'x-api-key': apiKey,
+    'anthropic-version': '2023-06-01',
+    'anthropic-dangerous-direct-browser-access': 'true'
+  };
+
+  for (var turn = 0; turn < 8; turn++) {
+    var body = JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 4000,
+      tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+      messages: messages
+    });
+
+    var data = await callAnthropicRaw(apiKey, headers, body);
+    if (!data || data.error) return data;
+
+    // Check if Claude wants to use a tool
+    var hasToolUse = (data.content || []).some(function(b) { return b.type === 'tool_use'; });
+
+    if (!hasToolUse || data.stop_reason === 'end_turn') {
+      // Final answer — return it
+      return data;
+    }
+
+    // Claude used a tool — add assistant response and continue
+    messages.push({ role: 'assistant', content: data.content });
+
+    // Build tool results for next turn
+    var toolResults = (data.content || [])
+      .filter(function(b) { return b.type === 'tool_use'; })
+      .map(function(b) {
+        return {
+          type: 'tool_result',
+          tool_use_id: b.id,
+          content: 'Search completed. Please compile results into the JSON array now.'
+        };
+      });
+
+    messages.push({ role: 'user', content: toolResults });
+  }
+
+  // Ran out of turns — return last data
+  return null;
+}
+
+async function callAnthropicRaw(apiKey, headers, body) {
+  // 1. Direct call (works on HTTPS/Vercel)
+  try {
+    var r = await fetch('https://api.anthropic.com/v1/messages', { method:'POST', headers:headers, body:body });
+    var d = await r.json();
+    if (!d.error) return d;
+    if (d.error.type === 'authentication_error' || d.error.type === 'permission_error' || d.error.type === 'billing_error') return d;
+    // Other error — try proxy
+  } catch(e) { agentLog('Direct blocked — trying proxy', 'warn'); }
+
+  // 2. corsproxy.io
+  try {
+    var r2 = await fetch('https://corsproxy.io/?' + encodeURIComponent('https://api.anthropic.com/v1/messages'), { method:'POST', headers:headers, body:body });
+    var d2 = await r2.json();
+    if (!d2.error) { agentLog('Connected via proxy', 'info'); return d2; }
+  } catch(e) {}
+
+  // 3. thingproxy
+  try {
+    var r3 = await fetch('https://thingproxy.freeboard.io/fetch/https://api.anthropic.com/v1/messages', { method:'POST', headers:headers, body:body });
+    var d3 = await r3.json();
+    if (!d3.error) return d3;
+  } catch(e) {}
+
+  return { error: { type: 'network_error', message: 'Cannot reach Anthropic API. Try opening the live site at leadflow-lovat.vercel.app' } };
+}
+
 
 function renderError(msg, showKeyPrompt) {
   var btn = document.getElementById('searchBtn');
