@@ -1579,10 +1579,11 @@ function doSearch() {
   var btn = document.getElementById('searchBtn');
   if (btn) { btn.disabled = true; btn.textContent = 'Searching...'; }
   document.getElementById('searchResults').innerHTML =
-    '<div class="search-status">'
+    '<div class="search-status" id="searchStatusBox">'
     + '<div class="spin"></div>'
     + '<div style="margin-top:12px;font-size:14px;">🤖 Searching real ' + ind + ' businesses in ' + city + '...</div>'
     + '<div style="font-size:11px;color:var(--text2);margin-top:6px;">AI scanning LinkedIn · Google Maps · Yellow Pages · Brabys · Cylex · CIPC</div>'
+    + '<div id="searchDebug" style="margin-top:16px;font-size:11px;color:var(--accent2);font-family:monospace;max-height:120px;overflow-y:auto;text-align:left;padding:8px;background:rgba(0,0,0,0.3);border-radius:6px;"></div>'
     + '</div>';
   var lmw2 = document.getElementById('loadMoreWrap');
   if (lmw2) lmw2.style.display = 'none';
@@ -1591,6 +1592,14 @@ function doSearch() {
   updateDirLinks();
   setModuleStatus('mod-discovery', 'Running...', 'amber');
   setModuleStatus('mod-verify', 'Queued', 'amber');
+  // 45-second timeout safety net
+  var searchTimeout = setTimeout(function() {
+    var db = document.getElementById('searchDebug');
+    if (db) db.innerHTML += '<div style="color:#ef4444;">TIMEOUT: No response after 45s. Check API key or try again.</div>';
+    var btn2 = document.getElementById('searchBtn');
+    if (btn2) { btn2.disabled = false; btn2.textContent = '🔍 Find Leads'; }
+  }, 45000);
+  window._searchTimeout = searchTimeout;
   runDiscoveryEngine(apiKey);
 }
 
@@ -1668,6 +1677,7 @@ async function runDiscoveryEngine(apiKey) {
   var pipelineNames = leads.map(function(l) { return (l.company || '').toLowerCase().trim(); });
 
   agentLog('Discovery Engine: searching ' + ind + ' in ' + city + ', ' + prov, 'agent');
+  searchLog('Starting search...');
 
   var prompt = 'Find 10 real ' + ind + ' businesses in ' + city + ', ' + prov + ', South Africa. '
     + 'Search yellowpages.co.za, google maps, linkedin.com/company, brabys.com. '
@@ -1677,7 +1687,9 @@ async function runDiscoveryEngine(apiKey) {
     + 'Return ONLY the JSON array.';
 
   try {
-    var data = await callAnthropicWithTools(apiKey, prompt);
+    searchLog('Calling Anthropic API...');
+  var data = await callAnthropicWithTools(apiKey, prompt);
+  searchLog(data ? 'API responded' : 'API returned null');
     if (!data) { renderError('Connection failed. Check internet and try again.', false); return; }
     if (data.error) {
       if (data.error.type === 'authentication_error') {
@@ -1740,7 +1752,7 @@ async function callAnthropicWithTools(apiKey, userPrompt) {
     });
 
     var data = await callAnthropicRaw(apiKey, headers, body);
-    if (!data || data.error) return data;
+    if (!data || data.error) { searchLog('API error: ' + (data && data.error ? data.error.message : 'null')); return data; }
 
     // Check if Claude wants to use a tool
     var hasToolUse = (data.content || []).some(function(b) { return b.type === 'tool_use'; });
@@ -1779,7 +1791,8 @@ async function callAnthropicRaw(apiKey, headers, body) {
     if (!d.error) return d;
     if (d.error.type === 'authentication_error' || d.error.type === 'permission_error' || d.error.type === 'billing_error') return d;
     // Other error — try proxy
-  } catch(e) { agentLog('Direct blocked — trying proxy', 'warn'); }
+  } catch(e) { agentLog('Direct blocked — trying proxy', 'warn');
+    searchLog('Direct blocked, trying corsproxy...'); }
 
   // 2. corsproxy.io
   try {
@@ -1800,6 +1813,7 @@ async function callAnthropicRaw(apiKey, headers, body) {
 
 
 function renderError(msg, showKeyPrompt) {
+  if (window._searchTimeout) clearTimeout(window._searchTimeout);
   var btn = document.getElementById('searchBtn');
   if (btn) { btn.disabled = false; btn.textContent = '🔍 Find Leads'; }
   var vbar = document.getElementById('searchVerifyBar');
@@ -1879,6 +1893,7 @@ function runVerificationEngine(businesses, pipelineNames) {
 // RENDER RESULTS — event listeners only, no inline JSON
 // ================================================================
 function renderDiscoveredLeads(businesses) {
+  if (window._searchTimeout) clearTimeout(window._searchTimeout);
   var btn = document.getElementById('searchBtn');
   if (btn) { btn.disabled = false; btn.textContent = '🔍 Find Leads'; }
   var vbar = document.getElementById('searchVerifyBar');
