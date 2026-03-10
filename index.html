@@ -996,7 +996,7 @@ async function saveProfile(){
   profile.calendly=document.getElementById('profCal').value;
   profile.n8n_webhook=document.getElementById('profN8n').value.trim();
   try{localStorage.setItem('lf_n8n',profile.n8n_webhook);}catch(e){}
-  const nb=document.getElementById('n8nStatusBox');if(nb&&profile.n8n_webhook){nb.innerHTML='<strong style="color:#065F46">n8n Agent Connected</strong> — webhook saved. Agent will call <code style="font-size:11px">'+profile.n8n_webhook.replace('https://','')+'</code> to mine leads.';}
+  const nb=document.getElementById('n8nStatusBox');if(nb&&profile.n8n_webhook){nb.innerHTML='<strong style="color:#065F46">n8n Agent Connected</strong> — webhook saved. Agent will call <code style="font-size:11px">'+profile.n8n_webhook.replace('https://','')+'</code> to find leads.';}
   try{const ex=await db('profiles?user_id=eq.'+user.id);if(ex&&ex.length)await db('profiles?user_id=eq.'+user.id,{method:'PATCH',body:JSON.stringify(profile)});else await db('profiles',{method:'POST',body:JSON.stringify({...profile,user_id:user.id})});toast('Profile saved ✓');}catch(e){toast('Save error');}
 }
 
