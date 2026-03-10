@@ -1,1 +1,373 @@
-
+{
+  "name": "LeadFlow — Automated Broker System v2.0 PRODUCTION",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "leadflow-mine",
+        "responseMode": "responseNode",
+        "options": { "allowedOrigins": "*" }
+      },
+      "id": "n1",
+      "name": "Webhook — Entry Point",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body || $input.first().json;\nconst action = (body.action || 'mine').toLowerCase();\nconst industry = body.industry || 'Construction';\nconst city = body.city || 'Johannesburg';\nconst province = body.province || 'Gauteng';\nconst userId = body.user_id || '';\nconst brokerName = body.broker_name || 'Mpofuma';\nconst brokerEmail = body.broker_email || 'mpofum@out.co.za';\nconst brokerPhone = body.broker_phone || '';\nconst calendlyLink = body.calendly_link || 'https://calendly.com/mpofum/30min';\nconst batchId = `batch_${Date.now()}`;\n\nreturn [{ json: { action, industry, city, province, userId, brokerName, brokerEmail, brokerPhone, calendlyLink, batchId, timestamp: new Date().toISOString() } }];"
+      },
+      "id": "n2",
+      "name": "Parse & Validate Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [220, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "loose" },
+          "conditions": [{ "id": "c1", "leftValue": "={{ $json.action }}", "rightValue": "mine", "operator": { "type": "string", "operation": "equals" } }],
+          "combinator": "and"
+        }
+      },
+      "id": "n3",
+      "name": "Route: Mine vs Status",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [440, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://mtnqgnrcukombrklezhe.supabase.co/rest/v1/leads?user_id=eq.{{ $('Parse & Validate Input').item.json.userId }}&industry=eq.{{ $('Parse & Validate Input').item.json.industry }}&select=source_id",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10bnFnbnJjdWtvbWJya2xlemhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NzY1NzQsImV4cCI6MjA4NzQ1MjU3NH0.Y_RBIjB1N_SEwNaLVg85R5wIRkXY199AiGRdqCzGhz8" },
+            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10bnFnbnJjdWtvbWJya2xlemhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NzY1NzQsImV4cCI6MjA4NzQ1MjU3NH0.Y_RBIjB1N_SEwNaLVg85R5wIRkXY199AiGRdqCzGhz8" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "n4",
+      "name": "Fetch Existing Lead IDs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [660, 200],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Store existing source_ids to prevent duplicates\nconst existing = $input.all();\nconst ids = new Set();\nexisting.forEach(item => {\n  if (item.json && item.json.source_id) ids.add(item.json.source_id);\n  if (Array.isArray(item.json)) item.json.forEach(r => { if (r.source_id) ids.add(r.source_id); });\n});\nconst ctx = $('Parse & Validate Input').item.json;\nreturn [{ json: { ...ctx, existingIds: Array.from(ids), existingCount: ids.size } }];"
+      },
+      "id": "n5",
+      "name": "Build Dedup Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [880, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "x-api-key", "value": "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" },
+            { "name": "anthropic-version", "value": "2023-06-01" },
+            { "name": "content-type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={\n  \"model\": \"claude-3-5-sonnet-20241022\",\n  \"max_tokens\": 3000,\n  \"messages\": [{\n    \"role\": \"user\",\n    \"content\": \"You are a South African commercial insurance lead researcher. Find 15 REAL {{ $json.industry }} businesses in {{ $json.city }}, {{ $json.province }}, South Africa. For each business, think deeply about their specific insurance risks and pain points.\\n\\nReturn ONLY a valid JSON array. No markdown, no explanation, just the array.\\n\\nEach object must have:\\n{\\\"name\\\": \\\"exact business name\\\",\\n\\\"address\\\": \\\"specific area in {{ $json.city }}\\\",\\n\\\"phone\\\": \\\"SA phone number or empty string\\\",\\n\\\"contact\\\": \\\"likely owner/director name or empty string\\\",\\n\\\"industry\\\": \\\"{{ $json.industry }}\\\",\\n\\\"website\\\": \\\"website or empty string\\\",\\n\\\"size\\\": \\\"small/medium/large\\\",\\n\\\"risk_profile\\\": \\\"2 sentence specific risk insight for this exact type of business\\\",\\n\\\"pain_point\\\": \\\"single most likely insurance gap or overpayment for this industry\\\",\\n\\\"estimated_premium_zar\\\": estimated annual premium as integer,\\n\\\"source_id\\\": \\\"unique-slug-lowercase-no-spaces\\\"}\\n\\nOnly real businesses. Vary sizes. Be specific to {{ $json.city }}.\"\n  }]\n}"
+      },
+      "id": "n6",
+      "name": "Claude — Prospect & Enrich",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1100, 200],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Check if this is an error output\nconst input = $input.first();\nif (input.json.error || input.json.message?.includes('error')) {\n  return [{ json: { _error: true, _errorMsg: 'Claude API failed: ' + (input.json.error?.message || input.json.message || 'Unknown'), _stage: 'prospect', leads: [] } }];\n}\n\nconst text = (input.json.content || []).filter(b => b.type === 'text').map(b => b.text).join('');\nconst clean = text.replace(/```json/gi, '').replace(/```/g, '').trim();\nconst a1 = clean.indexOf('['), a2 = clean.lastIndexOf(']');\n\nif (a1 === -1) return [{ json: { _error: true, _errorMsg: 'No JSON array in Claude response', _stage: 'prospect', leads: [] } }];\n\nlet raw;\ntry { raw = JSON.parse(clean.slice(a1, a2 + 1)); } catch(e) { return [{ json: { _error: true, _errorMsg: 'JSON parse failed: ' + e.message, _stage: 'prospect', leads: [] } }]; }\n\nconst ctx = $('Build Dedup Context').item.json;\nconst existingSet = new Set(ctx.existingIds || []);\n\nconst today = new Date();\nconst leads = raw\n  .filter(l => l.name && l.name.length > 2)\n  .filter(l => !existingSet.has(l.source_id))\n  .map(l => {\n    const slug = (l.source_id || l.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')) + '-' + ctx.city.toLowerCase().replace(/\\s/g, '-');\n    const score = (l.phone ? 1 : 0) + (l.contact ? 1 : 0) + (l.website ? 1 : 0) + (l.size === 'large' ? 2 : l.size === 'medium' ? 1 : 0) + 1;\n    const capped = Math.min(5, score);\n    const fuDays = capped >= 4 ? 1 : capped >= 3 ? 2 : 3;\n    const fu = new Date(today); fu.setDate(fu.getDate() + fuDays);\n    return {\n      user_id: ctx.userId,\n      company: l.name,\n      phone: l.phone || '',\n      contact: l.contact || '',\n      industry: l.industry || ctx.industry,\n      address: l.address || ctx.city,\n      website: l.website || '',\n      email: '',\n      source: 'n8n Agent — Auto-Prospected',\n      source_id: slug,\n      status: capped >= 4 ? 'Hot' : capped >= 3 ? 'Warm' : 'Cold',\n      score: capped,\n      followup: fu.toISOString().split('T')[0],\n      notes: `Risk: ${l.risk_profile || ''}\\nPain: ${l.pain_point || ''}\\nEst. premium: R${l.estimated_premium_zar || 0}/yr\\nBatch: ${ctx.batchId}`,\n      created_at: new Date().toISOString(),\n      _risk_profile: l.risk_profile || '',\n      _pain_point: l.pain_point || '',\n      _estimated_premium: l.estimated_premium_zar || 0,\n      _size: l.size || 'small',\n      _city: ctx.city,\n      _industry: ctx.industry,\n      _broker_name: ctx.brokerName,\n      _broker_email: ctx.brokerEmail,\n      _broker_phone: ctx.brokerPhone,\n      _calendly: ctx.calendlyLink,\n      _batch_id: ctx.batchId\n    };\n  });\n\nif (!leads.length) return [{ json: { _error: false, _info: 'All prospects already in pipeline (deduped)', leads: [], saved: 0 } }];\n\nreturn leads.map(l => ({ json: l }));"
+      },
+      "id": "n7",
+      "name": "Process, Score & Dedup",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1320, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "loose" },
+          "conditions": [{ "id": "c2", "leftValue": "={{ $json._error }}", "rightValue": true, "operator": { "type": "boolean", "operation": "true" } }],
+          "combinator": "and"
+        }
+      },
+      "id": "n8",
+      "name": "Error Gate",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1540, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Log error — non-blocking\nconst e = $input.first().json;\nconsole.error('[LeadFlow Error]', e._errorMsg || JSON.stringify(e));\nreturn [{ json: { success: false, error: e._errorMsg || 'Unknown error', stage: e._stage || 'unknown', timestamp: new Date().toISOString() } }];"
+      },
+      "id": "n9",
+      "name": "Log Error (Non-Blocking)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1760, 100]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build DB record — strip private _fields before saving\nconst l = $input.first().json;\nconst dbRecord = {};\nObject.keys(l).forEach(k => { if (!k.startsWith('_')) dbRecord[k] = l[k]; });\nreturn [{ json: { dbRecord, meta: { risk: l._risk_profile, pain: l._pain_point, premium: l._estimated_premium, size: l._size, city: l._city, industry: l._industry, brokerName: l._broker_name, brokerEmail: l._broker_email, brokerPhone: l._broker_phone, calendly: l._calendly, batchId: l._batch_id, company: l.company, contact: l.contact, phone: l.phone, score: l.score, status: l.status } } }];"
+      },
+      "id": "n10",
+      "name": "Prepare DB Record",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1760, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://mtnqgnrcukombrklezhe.supabase.co/rest/v1/leads",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10bnFnbnJjdWtvbWJya2xlemhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NzY1NzQsImV4cCI6MjA4NzQ1MjU3NH0.Y_RBIjB1N_SEwNaLVg85R5wIRkXY199AiGRdqCzGhz8" },
+            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10bnFnbnJjdWtvbWJya2xlemhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NzY1NzQsImV4cCI6MjA4NzQ1MjU3NH0.Y_RBIjB1N_SEwNaLVg85R5wIRkXY199AiGRdqCzGhz8" },
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Prefer", "value": "return=representation,resolution=ignore-duplicates" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify($json.dbRecord) }}",
+        "options": {}
+      },
+      "id": "n11",
+      "name": "Save Lead to Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1980, 300],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "x-api-key", "value": "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" },
+            { "name": "anthropic-version", "value": "2023-06-01" },
+            { "name": "content-type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={\n  \"model\": \"claude-3-5-sonnet-20241022\",\n  \"max_tokens\": 1000,\n  \"messages\": [{\n    \"role\": \"user\",\n    \"content\": \"You are {{ $('Prepare DB Record').item.json.meta.brokerName }}, a commercial insurance specialist at Outsurance. Write a cold email to {{ $('Prepare DB Record').item.json.meta.contact || 'the owner' }} at {{ $('Prepare DB Record').item.json.meta.company }}, a {{ $('Prepare DB Record').item.json.meta.size }} {{ $('Prepare DB Record').item.json.meta.industry }} business in {{ $('Prepare DB Record').item.json.meta.city }}.\\n\\nKnown risk profile: {{ $('Prepare DB Record').item.json.meta.risk }}\\nKey pain point: {{ $('Prepare DB Record').item.json.meta.pain }}\\nEstimated premium: R{{ $('Prepare DB Record').item.json.meta.premium }}/year\\n\\nRules:\\n- Sound like a smart, direct South African broker — NOT a bot\\n- Open with a specific, credible insight about THEIR industry risk in SA — no generic openers\\n- Never say 'I hope this email finds you well'\\n- Reference their specific business size and location\\n- The CTA is a 15-minute no-obligation review\\n- Under 150 words in the body\\n- Professional but human tone\\n- Sign off as {{ $('Prepare DB Record').item.json.meta.brokerName }}, Outsurance, {{ $('Prepare DB Record').item.json.meta.brokerPhone }}\\n\\nFormat exactly:\\nSUBJECT: [subject line]\\nBODY:\\n[email body]\"\n  }]\n}"
+      },
+      "id": "n12",
+      "name": "Claude — Write Personalised Email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2200, 300],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst meta = $('Prepare DB Record').item.json.meta;\n\n// Handle Claude API error\nif (input.error || !input.content) {\n  // Fallback to template email\n  const riskMap = {\n    'Construction': 'site liability gaps and uninsured subcontractors',\n    'Transport & Logistics': 'fleet exposure and cargo liability',\n    'Manufacturing': 'machinery breakdown and product liability',\n    'Healthcare & Medical': 'professional indemnity and cyber risk',\n    'Retail': 'stock theft and public liability',\n    'Mining': 'environmental liability and equipment cover'\n  };\n  const risk = riskMap[meta.industry] || 'underinsured commercial risks';\n  const subject = `${meta.company} — Are you fully covered for ${meta.industry} risks?`;\n  const body = `Good day ${meta.contact || 'there'},\\n\\nI came across ${meta.company} while working with ${meta.industry} businesses in ${meta.city}. One pattern I keep seeing: ${meta.size} ${meta.industry} operations are carrying significant ${risk} — often without realising it until there's a claim.\\n\\nI'd like to offer you a complimentary 15-minute policy review. No obligation, no pressure — just clarity on where you stand.\\n\\nCan we find 15 minutes this week?\\n\\nKind regards,\\n${meta.brokerName}\\nOutsurance — Commercial Insurance\\n${meta.brokerPhone}\\nmpofum@out.co.za`;\n  return [{ json: { subject, body, company: meta.company, contact: meta.contact, brokerEmail: meta.brokerEmail, calendly: meta.calendly, score: meta.score, status: meta.status, _template_fallback: true } }];\n}\n\nconst text = (input.content || []).filter(b => b.type === 'text').map(b => b.text).join('').trim();\nconst subMatch = text.match(/SUBJECT:\\s*(.+)/i);\nconst bodyMatch = text.match(/BODY:\\s*([\\s\\S]+)/i);\n\nconst subject = subMatch ? subMatch[1].trim() : `${meta.company} — Insurance Review`;\nconst body = bodyMatch ? bodyMatch[1].trim() : text;\n\nreturn [{ json: { subject, body, company: meta.company, contact: meta.contact, brokerEmail: meta.brokerEmail, calendly: meta.calendly, score: meta.score, status: meta.status, _template_fallback: false } }];"
+      },
+      "id": "n13",
+      "name": "Parse Email + Fallback",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2420, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "loose" },
+          "conditions": [{ "id": "c3", "leftValue": "={{ $json.score }}", "rightValue": 3, "operator": { "type": "number", "operation": "gte" } }],
+          "combinator": "and"
+        }
+      },
+      "id": "n14",
+      "name": "Score Gate: Hot/Warm Only",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [2640, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Warm leads (score 3): add Calendly CTA to email\nconst d = $input.first().json;\nconst warmBody = d.body + `\\n\\nBook a 15-minute slot here — no forms, no hassle:\\n${d.calendly}\\n\\nIf that link doesn't work for you, just reply and we'll find a time.`;\nreturn [{ json: { ...d, body: warmBody, _outreach_type: 'warm_with_calendly' } }];"
+      },
+      "id": "n15",
+      "name": "Inject Calendly Link",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2860, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Cold leads (score < 3): queue for nurture sequence only, no immediate email\nconst d = $input.first().json;\nreturn [{ json: { ...d, _outreach_type: 'cold_nurture_queued', _action: 'queued_for_followup' } }];"
+      },
+      "id": "n16",
+      "name": "Queue Cold for Nurture",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2860, 420]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Final response aggregator\nconst items = $input.all();\nconst ctx = $('Build Dedup Context').item.json;\nreturn [{\n  json: {\n    success: true,\n    action: 'mine',\n    batch_id: ctx.batchId,\n    industry: ctx.industry,\n    city: ctx.city,\n    leads_processed: items.length,\n    outreach_type: items[0]?.json._outreach_type || 'unknown',\n    message: `LeadFlow Agent: ${items.length} leads processed for ${ctx.industry} in ${ctx.city}`,\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "n17",
+      "name": "Build Final Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [3080, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              { "name": "Access-Control-Allow-Origin", "value": "*" },
+              { "name": "Access-Control-Allow-Methods", "value": "POST, OPTIONS" },
+              { "name": "Access-Control-Allow-Headers", "value": "Content-Type" },
+              { "name": "Content-Type", "value": "application/json" }
+            ]
+          }
+        }
+      },
+      "id": "n18",
+      "name": "Respond to LeadFlow",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [3300, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: false, error: $json.error || 'Agent error', timestamp: new Date().toISOString() }) }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              { "name": "Access-Control-Allow-Origin", "value": "*" },
+              { "name": "Content-Type", "value": "application/json" }
+            ]
+          }
+        }
+      },
+      "id": "n19",
+      "name": "Respond Error (Non-Crashing)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1980, 100]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, action: $('Parse & Validate Input').item.json.action, message: 'Status check received', timestamp: new Date().toISOString() }) }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              { "name": "Access-Control-Allow-Origin", "value": "*" }
+            ]
+          }
+        }
+      },
+      "id": "n20",
+      "name": "Respond Status Check",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [660, 420]
+    }
+  ],
+  "connections": {
+    "Webhook — Entry Point": {
+      "main": [[{ "node": "Parse & Validate Input", "type": "main", "index": 0 }]]
+    },
+    "Parse & Validate Input": {
+      "main": [[{ "node": "Route: Mine vs Status", "type": "main", "index": 0 }]]
+    },
+    "Route: Mine vs Status": {
+      "main": [
+        [{ "node": "Fetch Existing Lead IDs", "type": "main", "index": 0 }],
+        [{ "node": "Respond Status Check", "type": "main", "index": 0 }]
+      ]
+    },
+    "Fetch Existing Lead IDs": {
+      "main": [[{ "node": "Build Dedup Context", "type": "main", "index": 0 }]],
+      "error": [[{ "node": "Build Dedup Context", "type": "main", "index": 0 }]]
+    },
+    "Build Dedup Context": {
+      "main": [[{ "node": "Claude — Prospect & Enrich", "type": "main", "index": 0 }]]
+    },
+    "Claude — Prospect & Enrich": {
+      "main": [[{ "node": "Process, Score & Dedup", "type": "main", "index": 0 }]],
+      "error": [[{ "node": "Process, Score & Dedup", "type": "main", "index": 0 }]]
+    },
+    "Process, Score & Dedup": {
+      "main": [[{ "node": "Error Gate", "type": "main", "index": 0 }]]
+    },
+    "Error Gate": {
+      "main": [
+        [{ "node": "Log Error (Non-Blocking)", "type": "main", "index": 0 }],
+        [{ "node": "Prepare DB Record", "type": "main", "index": 0 }]
+      ]
+    },
+    "Log Error (Non-Blocking)": {
+      "main": [[{ "node": "Respond Error (Non-Crashing)", "type": "main", "index": 0 }]]
+    },
+    "Prepare DB Record": {
+      "main": [[{ "node": "Save Lead to Supabase", "type": "main", "index": 0 }]]
+    },
+    "Save Lead to Supabase": {
+      "main": [[{ "node": "Claude — Write Personalised Email", "type": "main", "index": 0 }]],
+      "error": [[{ "node": "Claude — Write Personalised Email", "type": "main", "index": 0 }]]
+    },
+    "Claude — Write Personalised Email": {
+      "main": [[{ "node": "Parse Email + Fallback", "type": "main", "index": 0 }]],
+      "error": [[{ "node": "Parse Email + Fallback", "type": "main", "index": 0 }]]
+    },
+    "Parse Email + Fallback": {
+      "main": [[{ "node": "Score Gate: Hot/Warm Only", "type": "main", "index": 0 }]]
+    },
+    "Score Gate: Hot/Warm Only": {
+      "main": [
+        [{ "node": "Inject Calendly Link", "type": "main", "index": 0 }],
+        [{ "node": "Queue Cold for Nurture", "type": "main", "index": 0 }]
+      ]
+    },
+    "Inject Calendly Link": {
+      "main": [[{ "node": "Build Final Response", "type": "main", "index": 0 }]]
+    },
+    "Queue Cold for Nurture": {
+      "main": [[{ "node": "Build Final Response", "type": "main", "index": 0 }]]
+    },
+    "Build Final Response": {
+      "main": [[{ "node": "Respond to LeadFlow", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": { "executionOrder": "v1", "saveManualExecutions": true, "callerPolicy": "workflowsFromSameOwner", "errorWorkflow": "" },
+  "staticData": null,
+  "tags": ["leadflow", "production", "insurance", "autonomous"],
+  "triggerCount": 0,
+  "versionId": "production-v2"
+}
