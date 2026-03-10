@@ -901,7 +901,13 @@ let agtCfg={score:true,fu:true,draft:true,book:true,brief:true};
 let apprs=[],apprIdx=null,curLid=null,autLvl='supervised',actLog=[],addedIds=new Set();
 
 /* ══ SUPABASE ══════════════════════════════════ */
-async function db(p,o={}){const h={'apikey':SK,'Authorization':'Bearer '+(user?.token||SK),'Content-Type':'application/json','Prefer':'return=representation',...(o.headers||{})};const r=await fetch(SB+'/rest/v1/'+p,{...o,headers:h});if(!r.ok){const t=await r.text();throw new Error(t||'DB '+r.status);}const t=await r.text();return t?JSON.parse(t):[];}
+async function db(p,o={}){
+  const prefer=o.method==='POST'?'return=representation,resolution=ignore-duplicates':'return=representation';
+  const h={'apikey':SK,'Authorization':'Bearer '+(user?.token||SK),'Content-Type':'application/json','Prefer':prefer,...(o.headers||{})};
+  const r=await fetch(SB+'/rest/v1/'+p,{...o,headers:h});
+  if(!r.ok){const t=await r.text();throw new Error(t||'DB '+r.status);}
+  const t=await r.text();return t?JSON.parse(t):[];
+}
 
 /* ══ AUTH ══════════════════════════════════════ */
 function authTab(t){['signin','signup','reset'].forEach((x,i)=>{document.getElementById('tab'+x.charAt(0).toUpperCase()+x.slice(1)).style.display=x===t?'block':'none';document.querySelectorAll('.auth-tab')[i].classList.toggle('on',x===t);});authMsg('','');}
@@ -941,7 +947,7 @@ async function doReset(){
   authMsg('Reset link sent.','ok');
 }
 
-function doSignOut(){try{localStorage.removeItem('lf_s');}catch(e){}user=null;leads=[];profile={};document.getElementById('authWrap').style.display='flex';document.getElementById('appWrap').style.display='none';}
+function doSignOut(){try{localStorage.removeItem('lf_s');}catch(e){}if(window._lf_tick){clearInterval(window._lf_tick);window._lf_tick=null;}user=null;leads=[];profile={};addedIds=new Set();document.getElementById('authWrap').style.display='flex';document.getElementById('appWrap').style.display='none';}
 
 /* ══ BOOT ══════════════════════════════════════ */
 async function boot(){
@@ -955,7 +961,7 @@ async function boot(){
   try{const s=JSON.parse(localStorage.getItem('lf_st_'+(user?.id||''))||'{}');Object.assign(stats,s);}catch(e){}
   await loadLeads();await loadProfile();
   refreshHome();renderPipe();renderFU();renderStats();
-  setInterval(tick,1000);tick();
+  if(!window._lf_tick)window._lf_tick=setInterval(tick,1000);tick();
   if(agtCfg.brief)setTimeout(runBrief,1400);
   aLog('LeadFlow agent ready · '+leads.length+' leads in pipeline','ok');
   goto('home');
@@ -963,8 +969,13 @@ async function boot(){
 }
 
 async function loadLeads(){
-  try{const d=await db('leads?user_id=eq.'+user.id+'&order=created_at.desc');leads=d||[];leads.forEach(l=>{if(l.source_id)addedIds.add(l.source_id);});document.getElementById('pipeBadge').textContent=leads.length;}
-  catch(e){aLog('Load error: '+e.message,'w');leads=[];}
+  try{
+    const d=await db('leads?user_id=eq.'+user.id+'&order=created_at.desc');
+    leads=d||[];
+    // Rebuild addedIds from DB — single source of truth
+    addedIds=new Set(leads.map(l=>l.source_id).filter(Boolean));
+    document.getElementById('pipeBadge').textContent=leads.length;
+  }catch(e){aLog('Load error: '+e.message,'w');leads=[];addedIds=new Set();}
 }
 
 async function loadProfile(){
@@ -1052,28 +1063,53 @@ function showPrev(rows){
 
 async function doImport(rows){
   if(!rows||!rows.length)return;
-  let added=0,skip=0;
+  let added=0,skip=0,errs=0;
+  // Always reload from DB first to get true state
+  await loadLeads();
+  const btn=document.querySelector('[onclick*="doImport"]');
+  if(btn){btn.disabled=true;btn.textContent='Importing...';}
   for(const row of rows){
+    if(!row.company||row.company.length<2){skip++;continue;}
     const slug=(row.company||'').toLowerCase().replace(/[^a-z0-9]+/g,'-');
     if(addedIds.has(slug)){skip++;continue;}
-    const sc=row.phone?3:2;const fu=new Date();fu.setDate(fu.getDate()+2);
-    const lead={user_id:user.id,company:row.company,phone:row.phone||'',contact:row.contact||'',industry:row.industry||'',address:row.address||'',website:row.website||'',email:row.email||'',source:'CSV Import',source_id:slug,status:'Cold',score:sc,followup:fu.toISOString().split('T')[0],notes:'',created_at:new Date().toISOString()};
-    try{const res=await db('leads',{method:'POST',body:JSON.stringify(lead)});const sv=Array.isArray(res)?res[0]:res;leads.unshift(sv);addedIds.add(slug);added++;}catch(e){skip++;}
+    const sc=row.phone?3:2;
+    const fu=new Date();fu.setDate(fu.getDate()+2);
+    const lead={
+      user_id:user.id,company:row.company,phone:row.phone||'',
+      contact:row.contact||'',industry:row.industry||'',
+      address:row.address||row.city||'',website:row.website||'',
+      email:row.email||'',source:'CSV Import',
+      source_id:slug,status:'Cold',score:sc,
+      followup:fu.toISOString().split('T')[0],
+      notes:'',created_at:new Date().toISOString()
+    };
+    try{
+      const res=await db('leads',{method:'POST',body:JSON.stringify(lead)});
+      const sv=Array.isArray(res)?res[0]:res;
+      if(sv&&sv.id){leads.unshift(sv);addedIds.add(slug);added++;}
+      else{skip++;} // duplicate ignored by DB
+    }catch(e){errs++;aLog('Import err: '+e.message,'w');}
   }
   document.getElementById('pipeBadge').textContent=leads.length;
-  document.getElementById('importPrev').innerHTML=`<div style="background:#ECFDF5;border:1px solid #A7F3D0;border-radius:var(--r);padding:14px;font-size:13px;font-weight:700;color:#065F46">✅ Import done: ${added} added${skip?' · '+skip+' skipped':''}</div>`;
-  addAct('CSV Import: '+added+' leads added','b');aLog('CSV: '+added+' added, '+skip+' skipped','ok');
-  toast('✅ '+added+' leads imported');refreshHome();renderPipe();window._csvRows=null;
+  const msg=`Import done: ${added} added${skip?' · '+skip+' skipped':''}${errs?' · '+errs+' errors':''}`;
+  document.getElementById('importPrev').innerHTML=`<div style="background:#ECFDF5;border:1px solid #A7F3D0;border-radius:var(--r);padding:14px;font-size:13px;font-weight:700;color:#065F46">${msg}</div>`;
+  addAct('CSV Import: '+added+' leads added','b');
+  aLog('CSV: '+added+' added, '+skip+' skipped, '+errs+' errors','ok');
+  toast(added>0?added+' leads imported':'No new leads — already in pipeline');
+  refreshHome();renderPipe();window._csvRows=null;
+  if(btn){btn.disabled=false;btn.textContent='Import All';}
 }
 
 async function addManual(){
   const co=document.getElementById('mCo').value.trim();if(!co){toast('Company name required');return;}
   const slug=co.toLowerCase().replace(/[^a-z0-9]+/g,'-');
+  if(addedIds.has(slug)){toast(co+' already in pipeline');return;}
   const ph=document.getElementById('mPh').value;const sc=ph?3:2;
   const fu=new Date();fu.setDate(fu.getDate()+2);
   const lead={user_id:user.id,company:co,phone:ph,contact:document.getElementById('mCt').value,industry:document.getElementById('mInd').value,address:document.getElementById('mAddr').value,website:document.getElementById('mWeb').value,source:'Manual',source_id:slug,status:'Cold',score:sc,followup:fu.toISOString().split('T')[0],notes:'',created_at:new Date().toISOString()};
   try{
-    const res=await db('leads',{method:'POST',body:JSON.stringify(lead)});const sv=Array.isArray(res)?res[0]:res;leads.unshift(sv);addedIds.add(slug);
+    const res=await db('leads',{method:'POST',body:JSON.stringify(lead)});const sv=Array.isArray(res)?res[0]:res;
+    if(sv&&sv.id){leads.unshift(sv);addedIds.add(slug);}
     document.getElementById('pipeBadge').textContent=leads.length;
     ['mCo','mPh','mCt','mInd','mAddr','mWeb'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
     addAct('Manual add: '+co,'b');aLog('Added: '+co,'ok');toast('✅ '+co+' added');
@@ -1113,7 +1149,7 @@ async function runAI(key,ind,city,prov){
     const a1=clean.indexOf('['),a2=clean.lastIndexOf(']');
     if(a1===-1){showSrchErr('No results returned. Try a different city.',false);btn.disabled=false;btn.innerHTML='<i data-lucide="search" style="width:14px;height:14px"></i> Search';lucide.createIcons();return;}
     const biz=JSON.parse(clean.slice(a1,a2+1));
-    const fresh=biz.filter(b=>b.name&&b.name.length>2&&!pipeNms.includes(b.name.toLowerCase()));
+    const fresh=biz.filter(b=>{if(!b.name||b.name.length<2)return false;const nm=b.name.toLowerCase();const slug=nm.replace(/[^a-z0-9]+/g,'-')+'-'+city.toLowerCase().replace(/\s/g,'-');return !pipeNms.includes(nm)&&!addedIds.has(slug);});
     sLog('Found '+fresh.length+' new leads');
     renderSrch(fresh,ind,city);
   }catch(e){sLog('Error: '+e.message);showSrchErr('Search failed: '+e.message,false);btn.disabled=false;btn.innerHTML='<i data-lucide="search" style="width:14px;height:14px"></i> Search';lucide.createIcons();}
@@ -1138,7 +1174,7 @@ function renderSrch(biz,ind,city){
 function showSrchErr(msg,showKey){document.getElementById('srchRes').innerHTML=showKey?`<div class="key-box"><h3>API Key Required</h3><p>${msg}</p><div class="key-row"><input type="password" class="fi" id="inlineKey" placeholder="sk-ant-api03-..." style="flex:1"><button class="btn btn-p" onclick="saveInlineKey()">Unlock</button></div><div style="margin-top:10px"><button class="btn btn-g" onclick="goto('import')">Free Import →</button></div></div>`:`<div class="err-box"><h3 style="color:var(--red);margin-bottom:6px">Search Error</h3><p style="font-size:13px;color:var(--sub);margin-bottom:14px">${msg}</p><div style="display:flex;gap:8px;justify-content:center"><button class="btn btn-p btn-sm" onclick="doSearch()">Retry</button><button class="btn btn-g btn-sm" onclick="goto('import')">Free Import</button></div></div>`;}
 
 async function addSrch(idx,ind,city){
-  const cards=document.querySelectorAll('[data-biz]');const card=cards[idx];const btn=card;
+  const btns=document.querySelectorAll('[data-biz]');const btn=btns[idx];
   if(btn){btn.disabled=true;btn.textContent='Adding...';}
   let b={};try{b=JSON.parse(btn?.getAttribute('data-biz')||'{}');}catch(e){}
   const slug=(b.name||'').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-'+city.toLowerCase().replace(/\s/g,'-');
@@ -1147,7 +1183,7 @@ async function addSrch(idx,ind,city){
   try{
     const res=await db('leads',{method:'POST',body:JSON.stringify(lead)});const sv=Array.isArray(res)?res[0]:res;leads.unshift(sv);addedIds.add(slug);
     document.getElementById('pipeBadge').textContent=leads.length;
-    if(card&&card.parentElement)card.parentElement.style.opacity='0.4';
+    if(btn&&btn.parentElement)btn.parentElement.style.opacity='0.4';
     addAct('Added: '+b.name,'b');toast('✅ '+b.name+' added');refreshHome();
     if(agtCfg.draft)setTimeout(()=>draftEm(sv||lead),500);
   }catch(e){toast('Error: '+e.message);if(btn){btn.disabled=false;btn.textContent='+ Add';}}
@@ -1271,14 +1307,14 @@ function refreshHome(){
   document.getElementById('m-leads').textContent=leads.length;
   document.getElementById('m-emails').textContent=stats.emails||0;
   document.getElementById('m-mtg').textContent=stats.meetings||0;
-  document.getElementById('m-pipe').textContent='R'+(leads.length*8000).toLocaleString();
+  const pipe=leads.reduce((a,l)=>{const est=l.score>=4?25000:l.score>=3?12000:6000;return a+est;},0);document.getElementById('m-pipe').textContent='R'+pipe.toLocaleString();
   document.getElementById('m-leads-d').textContent='↑ '+hot+' hot leads';
   document.getElementById('ac-mined').textContent=leads.length;
   document.getElementById('ac-sent').textContent=stats.emails||0;
   document.getElementById('ac-mtg').textContent=stats.meetings||0;
   document.getElementById('pipeBadge').textContent=leads.length;
   const h=new Date().getHours();
-  document.getElementById('homeGreeting')&&(document.getElementById('homeGreeting').textContent=(h<12?'Good morning':h<17?'Good afternoon':'Good evening')+', '+(profile.name||user?.name||'Closer')+' 👋');
+  // greeting element not in DOM
   if(od>0){document.getElementById('qs-fu-lbl').textContent=od+' overdue — action needed';document.getElementById('qs-fu-lbl').style.color='var(--red)';}
   renderBreakdown();renderActFeed();renderFU();
 }
@@ -1346,9 +1382,17 @@ function tick(){const n=new Date();document.getElementById('clockEl').textConten
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3100);}
 
 /* ══ INIT ════════════════════════════════════════ */
-(function(){
-  try{const s=JSON.parse(localStorage.getItem('lf_s')||'null');if(s&&s.id&&s.email){user=s;boot();return;}}catch(e){}
-  setInterval(tick,1000);tick();
+(async function(){
+  try{
+    const s=JSON.parse(localStorage.getItem('lf_s')||'null');
+    if(s&&s.id&&s.email){
+      // Validate session is still alive before booting
+      const chk=await fetch('https://mtnqgnrcukombrklezhe.supabase.co/auth/v1/user',{headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10bnFnbnJjdWtvbWJya2xlemhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NzY1NzQsImV4cCI6MjA4NzQ1MjU3NH0.Y_RBIjB1N_SEwNaLVg85R5wIRkXY199AiGRdqCzGhz8','Authorization':'Bearer '+s.token}});
+      if(chk.ok){user=s;boot();return;}
+      else{localStorage.removeItem('lf_s');}
+    }
+  }catch(e){}
+  if(!window._lf_tick)window._lf_tick=setInterval(tick,1000);tick();
   setTimeout(()=>{lucide.createIcons();},200);
 })();
 </script>
