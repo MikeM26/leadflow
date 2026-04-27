@@ -1,1 +1,1306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LeadFlow — Automated Broker System</title>
+<style>
+:root{
+  --blue:#4F6EF7;--navy:#1E2A4A;--green:#10B981;--red:#EF4444;--orange:#F59E0B;
+  --text:#0F172A;--sub:#64748B;--muted:#94A3B8;--border:#E2E8F0;
+  --bg:#F8FAFC;--white:#FFFFFF;--sw:220px;--th:56px;
+  --r:10px;--r-sm:6px;
+  --sh:0 1px 3px rgba(0,0,0,.08);
+  --sh-lg:0 4px 24px rgba(0,0,0,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+a{color:inherit;text-decoration:none}
 
+/* LAYOUT */
+.layout{display:flex;min-height:100vh}
+.sidebar{width:var(--sw);background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;overflow-y:auto;z-index:100}
+.main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{height:var(--th);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:50}
+.content{padding:24px;flex:1}
+.page{display:none}.page.on{display:block}
+
+/* SIDEBAR */
+.sb-logo{padding:16px 16px 12px}
+.sb-logo-inner{display:flex;align-items:center;gap:10px}
+.sb-logo-box{width:32px;height:32px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px;flex-shrink:0}
+.sb-brand{font-size:16px;font-weight:800;color:var(--text)}
+.sb-brand span{color:var(--blue)}
+.sb-tagline{font-size:10px;color:var(--muted);font-weight:500}
+.sb-sec{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:8px 16px 4px}
+.sb-item{width:100%;background:none;border:none;padding:8px 16px;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:var(--sub);cursor:pointer;border-radius:0;text-align:left;transition:all .15s;position:relative}
+.sb-item:hover{background:#F1F5FF;color:var(--blue)}
+.sb-item.on{background:#EEF2FF;color:var(--blue);font-weight:600}
+.sb-badge{font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;margin-left:auto}
+.sb-badge.blue{background:#EEF2FF;color:var(--blue)}
+.sb-badge.red{background:#FEF2F2;color:var(--red)}
+.sb-badge.orange{background:#FFF7ED;color:var(--orange)}
+.sb-badge.green{background:#ECFDF5;color:var(--green)}
+.sb-div{height:1px;background:var(--border);margin:6px 0}
+.sb-user{padding:12px 16px;margin-top:auto;border-top:1px solid var(--border)}
+.sb-user-card{display:flex;align-items:center;gap:8px}
+.sb-av{width:28px;height:28px;background:var(--blue);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;flex-shrink:0}
+.sb-uname{font-size:12px;font-weight:600;color:var(--text)}
+.sb-uemail{font-size:11px;color:var(--muted)}
+
+/* TOPBAR */
+.tb-title{font-size:15px;font-weight:700;color:var(--text)}
+.tb-right{display:flex;align-items:center;gap:12px}
+.tb-clock{font-size:12px;font-weight:600;color:var(--sub);font-variant-numeric:tabular-nums}
+.agent-pill{display:flex;align-items:center;gap:6px;background:#ECFDF5;border:1px solid #A7F3D0;border-radius:20px;padding:4px 10px;font-size:11px;font-weight:600;color:#065F46}
+.agent-pill .dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* CARDS */
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:20px;box-shadow:var(--sh)}
+.card+.card{margin-top:16px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 16px;border-radius:var(--r-sm);font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;position:relative;overflow:hidden}
+.btn-p{background:var(--blue);color:#fff}.btn-p:hover{background:#3D5CE3}
+.btn-dark{background:var(--navy);color:#fff}.btn-dark:hover{background:#2D3F6B}
+.btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border)}.btn-ghost:hover{background:var(--bg)}
+.btn-danger{background:#FEF2F2;color:var(--red);border:1px solid #FECACA}.btn-danger:hover{background:#FEE2E2}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-xs{padding:4px 8px;font-size:11px}
+.btn-full{width:100%}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.ripple-effect{position:absolute;border-radius:50%;background:rgba(255,255,255,.3);transform:scale(0);animation:ripple-anim .5s linear;pointer-events:none}
+@keyframes ripple-anim{to{transform:scale(4);opacity:0}}
+
+/* FORMS */
+.fg{margin-bottom:14px}
+.fl{display:block;font-size:12px;font-weight:600;color:var(--sub);margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em}
+.fi{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--r-sm);font-size:13px;color:var(--text);background:var(--white);transition:border-color .15s;outline:none}
+.fi:focus{border-color:var(--blue)}
+textarea.fi{resize:vertical;min-height:80px}
+
+/* PAGE HEADERS */
+.crumb{font-size:12px;color:var(--muted);margin-bottom:6px}
+.crumb span{color:var(--text);font-weight:500}
+.pg-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.pg-title{font-size:22px;font-weight:800;color:var(--text)}
+.pg-sub{font-size:13px;color:var(--sub);margin-top:2px}
+
+/* METRICS */
+.metrics-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
+.metric-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:18px;cursor:pointer;transition:all .15s;box-shadow:var(--sh)}
+.metric-card:hover{border-color:var(--blue);transform:translateY(-1px)}
+.metric-card .num{font-size:28px;font-weight:800;color:var(--text);line-height:1}
+.metric-card .lbl{font-size:12px;color:var(--sub);margin-top:4px;font-weight:500}
+.metric-card .delta{font-size:11px;color:var(--green);margin-top:6px;font-weight:600}
+
+/* AGENT BANNER */
+.agent-banner{background:var(--navy);border-radius:var(--r);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;color:#fff}
+.ab-title{font-size:16px;font-weight:700;margin-bottom:4px}
+.ab-sub{font-size:12px;opacity:.7;line-height:1.5}
+.ab-status{display:flex;align-items:center;gap:8px;margin-top:10px}
+.ab-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;flex-shrink:0}
+.ab-label{font-size:12px;opacity:.8}
+.ab-right{display:flex;gap:20px}
+.agent-cycle{text-align:center}
+.ac-num{font-size:24px;font-weight:800}
+.ac-lbl{font-size:11px;opacity:.6;margin-top:2px}
+
+/* PIPELINE */
+.pipe-grid{display:grid;gap:10px}
+.lead-row{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .15s}
+.lead-row:hover{border-color:var(--blue);box-shadow:var(--sh)}
+.lead-score{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.score-hot{background:#FEF2F2;color:var(--red)}
+.score-warm{background:#FFF7ED;color:var(--orange)}
+.score-cold{background:#EEF2FF;color:var(--blue)}
+.lead-co{font-size:13px;font-weight:700;color:var(--text)}
+.lead-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.lead-actions{margin-left:auto;display:flex;gap:6px}
+.status-pill{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px}
+.pill-hot{background:#FEF2F2;color:var(--red)}
+.pill-warm{background:#FFF7ED;color:var(--orange)}
+.pill-cold{background:#EEF2FF;color:var(--blue)}
+.pill-won{background:#ECFDF5;color:var(--green)}
+
+/* FOLLOW-UPS */
+.fu-row{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.fu-overdue{border-left:3px solid var(--red)}
+.fu-due{border-left:3px solid var(--orange)}
+
+/* MODALS */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--white);border-radius:var(--r);padding:24px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;box-shadow:var(--sh-lg)}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.modal-title{font-size:16px;font-weight:700}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);line-height:1;padding:0 4px}
+
+/* PROFILE GRID */
+.prof-grid{display:grid;grid-template-columns:1fr 320px;gap:20px}
+
+/* SERVICE STATUS */
+.svc-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px}
+.svc-row:last-child{border-bottom:none}
+.svc-dot{width:8px;height:8px;border-radius:50%;background:#E2E8F0;flex-shrink:0}
+.svc-dot.svc-ok{background:var(--green)}
+.svc-dot.svc-err{background:var(--red)}
+.svc-dot.svc-warn{background:var(--orange)}
+.svc-name{flex:1;color:var(--text)}
+.svc-val{font-size:12px;color:var(--sub)}
+
+/* WORKFLOW STEPS */
+.workflow-steps{display:flex;gap:0;margin-bottom:20px;background:var(--white);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.ws{flex:1;padding:12px 10px;text-align:center;border-right:1px solid var(--border);transition:all .3s}
+.ws:last-child{border-right:none}
+.ws.active{background:#EEF2FF}
+.ws-lbl{font-size:11px;font-weight:700;color:var(--blue)}
+.ws-status{font-size:10px;color:var(--muted);margin-top:3px}
+
+/* AGENT LOG */
+.log-wrap{background:#0F172A;border-radius:var(--r);padding:14px;font-family:monospace;font-size:11px;max-height:220px;overflow-y:auto}
+.ll{padding:2px 0;line-height:1.6}
+.lo{color:#10B981}.lw{color:#F59E0B}.lb{color:#60A5FA}.li{color:#94A3B8}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.stat-box{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:18px}
+.stat-num{font-size:32px;font-weight:800;color:var(--text)}
+.stat-lbl{font-size:12px;color:var(--sub);margin-top:4px}
+
+/* IMPORT */
+.drop-zone{border:2px dashed var(--border);border-radius:var(--r);padding:32px;text-align:center;cursor:pointer;transition:all .2s}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--blue);background:#F1F5FF}
+.drop-icon{font-size:32px;margin-bottom:8px}
+.drop-title{font-size:14px;font-weight:600;color:var(--text)}
+.drop-sub{font-size:12px;color:var(--muted);margin-top:4px}
+
+/* AUTONOMY */
+.aut-btns{display:flex;gap:8px;margin-bottom:16px}
+.aut-btn{flex:1;padding:8px;border:2px solid var(--border);border-radius:var(--r-sm);background:none;cursor:pointer;font-size:12px;font-weight:600;color:var(--sub);transition:all .15s}
+.aut-btn.on{border-color:var(--blue);background:#EEF2FF;color:var(--blue)}
+
+/* APPROVAL */
+.appr-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.appr-item:last-child{border-bottom:none}
+
+/* SEARCH RESULTS */
+.srch-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px}
+.srch-body{flex:1}
+.srch-co{font-size:13px;font-weight:700}
+.srch-meta{font-size:11px;color:var(--muted);margin-top:3px}
+.srch-risk{font-size:11px;color:var(--sub);margin-top:6px;line-height:1.5}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;padding:10px 20px;border-radius:var(--r-sm);font-size:13px;font-weight:600;opacity:0;transition:all .3s;z-index:999;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* AUTH */
+#authWrap{display:none!important}
+#appWrap{display:block}
+</style>
+</head>
+<body>
+
+<div id="authWrap"></div>
+
+<div id="appWrap">
+<div class="layout">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-inner">
+      <div class="sb-logo-box">LF</div>
+      <div>
+        <div class="sb-brand"><span>Lead</span>Flow</div>
+        <div class="sb-tagline">Work Different.</div>
+      </div>
+    </div>
+  </div>
+  <div class="sb-sec">Command</div>
+  <button class="sb-item on" id="nav-home" onclick="ripple(this);goto('home')">Command Centre</button>
+  <button class="sb-item" id="nav-agent" onclick="ripple(this);goto('agent')">AI Agent<span class="sb-badge orange" id="agentBadge" style="display:none">0</span></button>
+  <button class="sb-item" id="nav-pipeline" onclick="ripple(this);goto('pipeline')">Pipeline<span class="sb-badge blue" id="pipeBadge">0</span></button>
+  <button class="sb-item" id="nav-followups" onclick="ripple(this);goto('followups')">Follow-ups<span class="sb-badge red" id="fuBadge" style="display:none">0</span></button>
+  <div class="sb-div"></div>
+  <div class="sb-sec">Tools</div>
+  <button class="sb-item" id="nav-import" onclick="ripple(this);goto('import')">Import Leads<span class="sb-badge green">Free</span></button>
+  <button class="sb-item" id="nav-email" onclick="ripple(this);goto('email')">Email Generator</button>
+  <button class="sb-item" id="nav-search" onclick="ripple(this);goto('search')">AI Search</button>
+  <button class="sb-item" id="nav-script" onclick="ripple(this);goto('script')">Call Script</button>
+  <button class="sb-item" id="nav-stats" onclick="ripple(this);goto('stats')">Stats</button>
+  <div class="sb-div"></div>
+  <div class="sb-sec">Account</div>
+  <button class="sb-item" id="nav-profile" onclick="ripple(this);goto('profile')">Profile</button>
+  <button class="sb-item" onclick="ripple(this);doSignOut()">Sign Out</button>
+  <div class="sb-user">
+    <div class="sb-user-card">
+      <div class="sb-av" id="userAv">M</div>
+      <div>
+        <div class="sb-uname" id="userNameEl">Mpofuma</div>
+        <div class="sb-uemail" id="userEmailEl">mpofum@out.co.za</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <nav class="topbar">
+    <div class="tb-title" id="tnTitle">Command Centre</div>
+    <div class="tb-right">
+      <div class="tb-clock" id="clockEl">00:00:00</div>
+      <div class="agent-pill"><div class="dot"></div><span id="agentPillLbl">Agent Active</span></div>
+    </div>
+  </nav>
+  <div class="content">
+
+<!-- ═══ HOME ═══ -->
+<div class="page on" id="page-home">
+  <div class="crumb">LeadFlow / <span>Command Centre</span></div>
+  <div class="agent-banner">
+    <div>
+      <div class="ab-title">Automated Broker System</div>
+      <div class="ab-sub">Finds leads. Writes proposals. Queues for your approval. You only close.</div>
+      <div class="ab-status"><div class="ab-dot" id="agentBannerDot"></div><div class="ab-label" id="agentBannerLbl">Semi-Autonomous — First outreach requires approval</div></div>
+    </div>
+    <div class="ab-right">
+      <div class="agent-cycle"><div class="ac-num" id="ac-mined">0</div><div class="ac-lbl">Leads</div></div>
+      <div class="agent-cycle"><div class="ac-num" id="ac-sent">0</div><div class="ac-lbl">Emails</div></div>
+      <div class="agent-cycle"><div class="ac-num" id="ac-mtg">0</div><div class="ac-lbl">Meetings</div></div>
+    </div>
+  </div>
+  <div class="metrics-row">
+    <div class="metric-card" onclick="ripple(this);goto('pipeline')">
+      <div class="num" id="m-leads">0</div>
+      <div class="lbl">Leads in Pipeline</div>
+      <div class="delta" id="m-leads-d">Click to view</div>
+    </div>
+    <div class="metric-card" onclick="ripple(this);goto('email')">
+      <div class="num" id="m-emails">0</div>
+      <div class="lbl">Emails Sent</div>
+      <div class="delta">Draft new email</div>
+    </div>
+    <div class="metric-card" onclick="ripple(this);goto('followups')">
+      <div class="num" id="m-mtg">0</div>
+      <div class="lbl">Meetings Booked</div>
+      <div class="delta">View follow-ups</div>
+    </div>
+    <div class="metric-card">
+      <div class="num" id="m-pipe">R0</div>
+      <div class="lbl">Revenue Pipeline</div>
+      <div class="delta">Estimated value</div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div class="card">
+      <div style="font-size:13px;font-weight:700;margin-bottom:14px">Quick Actions</div>
+      <div style="display:grid;gap:8px">
+        <button class="btn btn-p btn-full" onclick="ripple(this);goto('import')">Import Leads</button>
+        <button class="btn btn-ghost btn-full" onclick="ripple(this);goto('email')">Draft Email</button>
+        <button class="btn btn-ghost btn-full" onclick="ripple(this);goto('search')">Find Leads (AI Search)</button>
+        <button class="btn btn-ghost btn-full" onclick="ripple(this);goto('followups')">View Follow-ups</button>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-size:13px;font-weight:700;margin-bottom:14px">Activity Feed</div>
+      <div id="actFeed"><div style="color:var(--muted);font-size:13px">No activity yet.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ AGENT ═══ -->
+<div class="page" id="page-agent">
+  <div class="crumb">LeadFlow / <span>AI Agent</span></div>
+  <div class="pg-head">
+    <div><div class="pg-title">AI Agent</div><div class="pg-sub">Finds leads, writes emails, queues for approval</div></div>
+    <button class="btn btn-p btn-sm" onclick="ripple(this);runAgent()">Run Agent Now</button>
+  </div>
+  <div class="workflow-steps">
+    <div class="ws active" id="ws1"><div class="ws-lbl">1. Find</div><div class="ws-status" id="ws1s">Prospect leads</div></div>
+    <div class="ws" id="ws2"><div class="ws-lbl">2. Score</div><div class="ws-status" id="ws2s">Rate each lead</div></div>
+    <div class="ws" id="ws3"><div class="ws-lbl">3. Draft</div><div class="ws-status" id="ws3s">Write email</div></div>
+    <div class="ws" id="ws4"><div class="ws-lbl">4. Approve</div><div class="ws-status" id="ws4s">Your review</div></div>
+    <div class="ws" id="ws5"><div class="ws-lbl">5. Send</div><div class="ws-status" id="ws5s">After approval</div></div>
+    <div class="ws" id="ws6"><div class="ws-lbl">6. Follow-up</div><div class="ws-status" id="ws6s">Auto 3-day</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+    <div class="card">
+      <div style="font-size:13px;font-weight:700;margin-bottom:12px">Autonomy Level</div>
+      <div class="aut-btns">
+        <button class="aut-btn on" id="aut-supervised" onclick="setAut('supervised')">Supervised</button>
+        <button class="aut-btn" id="aut-semi" onclick="setAut('semi')">Semi</button>
+        <button class="aut-btn" id="aut-full" onclick="setAut('full')">Full</button>
+      </div>
+      <div style="font-size:12px;color:var(--sub)" id="autDesc">Every email requires your approval before sending</div>
+      <div style="margin-top:12px">
+        <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;margin-bottom:8px"><input type="checkbox" id="ag_score"> Auto-score new leads</label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;margin-bottom:8px"><input type="checkbox" id="ag_fu"> Auto follow-up after 3 days</label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;margin-bottom:8px"><input type="checkbox" id="ag_draft"> Auto-draft outreach emails</label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer"><input type="checkbox" id="ag_book"> Auto-send Calendly on warm reply</label>
+      </div>
+      <button class="btn btn-ghost btn-sm" style="margin-top:12px" onclick="saveAgt()">Save Settings</button>
+    </div>
+    <div class="card" id="apprCard" style="display:none">
+      <div style="font-size:13px;font-weight:700;margin-bottom:12px">Pending Approval <span class="sb-badge orange" id="apprBadge">0</span></div>
+      <div id="apprList"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="font-size:13px;font-weight:700">Agent Log</div>
+      <button class="btn btn-ghost btn-xs" onclick="clearLog()">Clear</button>
+    </div>
+    <div class="log-wrap" id="agentLog"><div class="ll li">— LeadFlow agent ready —</div></div>
+  </div>
+</div>
+
+<!-- ═══ PIPELINE ═══ -->
+<div class="page" id="page-pipeline">
+  <div class="crumb">LeadFlow / <span>Pipeline</span></div>
+  <div class="pg-head">
+    <div><div class="pg-title">Pipeline</div><div class="pg-sub" id="pipeSubtitle">All leads</div></div>
+    <div style="display:flex;gap:8px">
+      <select class="fi" style="width:auto;padding:6px 10px;font-size:12px" id="pipeFilter" onchange="renderPipe()">
+        <option value="">All</option>
+        <option value="Hot">Hot</option>
+        <option value="Warm">Warm</option>
+        <option value="Cold">Cold</option>
+        <option value="Won">Won</option>
+      </select>
+      <button class="btn btn-p btn-sm" onclick="ripple(this);goto('import')">+ Add Leads</button>
+    </div>
+  </div>
+  <div class="pipe-grid" id="pipeList"><div style="color:var(--muted);text-align:center;padding:40px;font-size:13px">No leads yet — import or add manually</div></div>
+</div>
+
+<!-- ═══ FOLLOW-UPS ═══ -->
+<div class="page" id="page-followups">
+  <div class="crumb">LeadFlow / <span>Follow-ups</span></div>
+  <div class="pg-head">
+    <div><div class="pg-title">Follow-ups</div><div class="pg-sub">Due and upcoming tasks</div></div>
+  </div>
+  <div id="fuList"><div style="color:var(--muted);font-size:13px;padding:20px 0">No follow-ups due</div></div>
+</div>
+
+<!-- ═══ IMPORT ═══ -->
+<div class="page" id="page-import">
+  <div class="crumb">LeadFlow / <span>Import Leads</span></div>
+  <div class="pg-head"><div><div class="pg-title">Import Leads</div><div class="pg-sub">CSV upload or paste · Any size</div></div></div>
+  <div class="card" style="margin-bottom:16px">
+    <div class="drop-zone" id="dropZone" onclick="document.getElementById('csvFile').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
+      <div class="drop-icon">📂</div>
+      <div class="drop-title">Drop CSV here or click to browse</div>
+      <div class="drop-sub">.csv or .txt · Any size</div>
+      <input type="file" id="csvFile" accept=".csv,.txt" style="display:none" onchange="handleFile(this)">
+    </div>
+    <div style="margin-top:16px">
+      <label class="fl">Or paste CSV directly:</label>
+      <textarea class="fi" id="csvPaste" rows="4" placeholder="Company Name,Phone,Industry,City,Contact&#10;Acme Builders,011 555 1234,Construction,Sandton,John Smith"></textarea>
+      <button class="btn btn-p" style="margin-top:8px" onclick="ripple(this);previewImport()">Preview Import</button>
+    </div>
+    <div id="importPrev" style="margin-top:12px"></div>
+  </div>
+  <div class="card">
+    <div style="font-size:13px;font-weight:700;margin-bottom:14px">Quick Manual Add</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+      <div class="fg"><label class="fl">Company *</label><input class="fi" id="manCo" placeholder="Acme Construction"></div>
+      <div class="fg"><label class="fl">Phone</label><input class="fi" id="manPhone" placeholder="011 555 1234"></div>
+      <div class="fg"><label class="fl">Industry</label><input class="fi" id="manInd" placeholder="Construction"></div>
+      <div class="fg"><label class="fl">Contact Person</label><input class="fi" id="manContact" placeholder="Owner name"></div>
+      <div class="fg"><label class="fl">City / Address</label><input class="fi" id="manCity" placeholder="Sandton, Gauteng"></div>
+      <div class="fg"><label class="fl">Website</label><input class="fi" id="manWeb" placeholder="www.example.co.za"></div>
+    </div>
+    <button class="btn btn-p" onclick="ripple(this);addManual()">Add to Pipeline</button>
+    <div id="manualMsg" style="margin-top:8px;font-size:13px"></div>
+  </div>
+</div>
+
+<!-- ═══ EMAIL GENERATOR ═══ -->
+<div class="page" id="page-email">
+  <div class="crumb">LeadFlow / <span>Email Generator</span></div>
+  <div class="pg-head"><div><div class="pg-title">Email Generator</div><div class="pg-sub">AI-written personalised outreach</div></div></div>
+  <div style="display:grid;grid-template-columns:320px 1fr;gap:16px">
+    <div class="card">
+      <div class="fg"><label class="fl">Company</label><input class="fi" id="eCo" placeholder="Acme Construction"></div>
+      <div class="fg"><label class="fl">Contact Person</label><input class="fi" id="eCt" placeholder="John"></div>
+      <div class="fg"><label class="fl">Industry</label><input class="fi" id="eInd" placeholder="Construction"></div>
+      <div class="fg"><label class="fl">City</label><input class="fi" id="eCity" placeholder="Sandton"></div>
+      <div class="fg"><label class="fl">Known Risk / Pain</label><textarea class="fi" id="ePain" rows="3" placeholder="Vehicle fleet not covered for hijacking..."></textarea></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-p btn-full" id="genBtn" onclick="ripple(this);genEmail()">Generate Email</button>
+      </div>
+      <div style="margin-top:10px">
+        <label class="fl" style="margin-bottom:6px">Or pick from pipeline:</label>
+        <select class="fi" id="eLeadPick" onchange="pickLead(this.value)"><option value="">— Select lead —</option></select>
+      </div>
+    </div>
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:700">Generated Email</div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-xs" onclick="ripple(this);copyEmail()">Copy</button>
+          <button class="btn btn-p btn-xs" onclick="ripple(this);openOutlook()">Open in Outlook</button>
+        </div>
+      </div>
+      <textarea class="fi" id="eOut" rows="18" placeholder="Your email will appear here..." style="font-family:monospace;font-size:12px"></textarea>
+      <div id="eStatus" style="margin-top:8px;font-size:12px;color:var(--sub)"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ AI SEARCH ═══ -->
+<div class="page" id="page-search">
+  <div class="crumb">LeadFlow / <span>AI Search</span></div>
+  <div class="pg-head"><div><div class="pg-title">AI Lead Search</div><div class="pg-sub">Powered by Groq (free) — finds real SA businesses</div></div></div>
+  <div class="card" style="margin-bottom:16px">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end">
+      <div class="fg" style="margin:0"><label class="fl">Industry</label>
+        <select class="fi" id="srchInd">
+          <option>Construction</option><option>Transport &amp; Logistics</option><option>Manufacturing</option>
+          <option>Retail</option><option>Hospitality &amp; Restaurants</option><option>Healthcare &amp; Medical</option>
+          <option>Engineering</option><option>Mining</option><option>Agriculture &amp; Farming</option>
+          <option>Security Services</option><option>Solar &amp; Renewable Energy</option><option>Courier &amp; Delivery</option>
+          <option>Automotive &amp; Car Dealerships</option><option>Real Estate &amp; Property</option>
+          <option>Legal Services</option><option>Accounting &amp; Auditing</option><option>Technology &amp; IT</option>
+          <option>Events Management</option><option>Game Farms &amp; Lodges</option>
+        </select>
+      </div>
+      <div class="fg" style="margin:0"><label class="fl">Province</label>
+        <select class="fi" id="srchProv">
+          <option>Gauteng</option><option>Western Cape</option><option>KwaZulu-Natal</option>
+          <option>Eastern Cape</option><option>Limpopo</option><option>Mpumalanga</option>
+          <option>North West</option><option>Free State</option><option>Northern Cape</option>
+        </select>
+      </div>
+      <div class="fg" style="margin:0"><label class="fl">City</label><input class="fi" id="srchCity" placeholder="Johannesburg" value="Johannesburg"></div>
+      <button class="btn btn-p" onclick="ripple(this);runAI()" id="srchBtn">Search</button>
+    </div>
+  </div>
+  <div id="srchResults"></div>
+</div>
+
+<!-- ═══ CALL SCRIPT ═══ -->
+<div class="page" id="page-script">
+  <div class="crumb">LeadFlow / <span>Call Script</span></div>
+  <div class="pg-head"><div><div class="pg-title">Call Script</div><div class="pg-sub">Personalised cold call guide</div></div></div>
+  <div style="display:grid;grid-template-columns:300px 1fr;gap:16px">
+    <div class="card">
+      <div class="fg"><label class="fl">Company</label><input class="fi" id="scCo" placeholder="Acme Construction"></div>
+      <div class="fg"><label class="fl">Contact</label><input class="fi" id="scCt" placeholder="John"></div>
+      <div class="fg"><label class="fl">Industry</label><input class="fi" id="scInd" placeholder="Construction"></div>
+      <div class="fg"><label class="fl">Known Pain</label><textarea class="fi" id="scPain" rows="3" placeholder="Fleet exposure..."></textarea></div>
+      <button class="btn btn-p btn-full" onclick="ripple(this);genScript()">Generate Script</button>
+      <div style="margin-top:10px">
+        <label class="fl" style="margin-bottom:6px">Pick from pipeline:</label>
+        <select class="fi" id="scLeadPick" onchange="pickLeadScript(this.value)"><option value="">— Select lead —</option></select>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-size:13px;font-weight:700;margin-bottom:12px">Call Script</div>
+      <div id="scriptOut" style="font-size:13px;line-height:1.8;color:var(--text);white-space:pre-wrap;min-height:200px">Script will appear here after you click Generate Script.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ STATS ═══ -->
+<div class="page" id="page-stats">
+  <div class="crumb">LeadFlow / <span>Stats</span></div>
+  <div class="pg-head">
+    <div><div class="pg-title">Stats</div></div>
+    <button class="btn btn-ghost btn-sm" onclick="resetStats()">Reset</button>
+  </div>
+  <div class="stats-grid" style="margin-bottom:20px">
+    <div class="stat-box"><div class="stat-num" id="st-leads">0</div><div class="stat-lbl">Total Leads</div></div>
+    <div class="stat-box"><div class="stat-num" id="st-hot">0</div><div class="stat-lbl">Hot Leads</div></div>
+    <div class="stat-box"><div class="stat-num" id="st-warm">0</div><div class="stat-lbl">Warm Leads</div></div>
+    <div class="stat-box"><div class="stat-num" id="st-emails">0</div><div class="stat-lbl">Emails Sent</div></div>
+    <div class="stat-box"><div class="stat-num" id="st-meetings">0</div><div class="stat-lbl">Meetings Booked</div></div>
+    <div class="stat-box"><div class="stat-num" id="st-won">0</div><div class="stat-lbl">Deals Won</div></div>
+  </div>
+  <div class="card">
+    <div style="font-size:13px;font-weight:700;margin-bottom:12px">Log Email Sent / Meeting Booked</div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost" onclick="ripple(this);logEmail()">+ Email Sent</button>
+      <button class="btn btn-ghost" onclick="ripple(this);logMeeting()">+ Meeting Booked</button>
+      <button class="btn btn-ghost" onclick="ripple(this);logDeal()">+ Deal Won</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PROFILE ═══ -->
+<div class="page" id="page-profile">
+  <div class="crumb">LeadFlow / <span>Profile</span></div>
+  <div class="pg-head"><div><div class="pg-title">Broker Profile</div><div class="pg-sub">Your details are injected into every email, call script and proposal automatically</div></div></div>
+  <div class="prof-grid">
+    <div class="card">
+      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--sub);margin-bottom:14px">Personal Details</div>
+      <div class="fg"><label class="fl">Full Name</label><input class="fi" id="profName" placeholder="Mpofuma"></div>
+      <div class="fg"><label class="fl">Phone Number</label><input class="fi" id="profPhone" placeholder="082 555 1234"></div>
+      <div class="fg"><label class="fl">Work Email</label><input class="fi" id="profEmail" placeholder="mpofum@out.co.za"></div>
+      <div class="fg"><label class="fl">Province / Service Area</label><input class="fi" id="profBranch" placeholder="e.g. Gauteng — Sandton, Midrand, Pretoria"></div>
+      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--sub);margin:20px 0 14px">Brokerage Details</div>
+      <div class="fg"><label class="fl">Brokerage / Company Name</label><input class="fi" id="profCompany" placeholder="OUTsurance"></div>
+      <div class="fg"><label class="fl">FSP / Licence Number</label><input class="fi" id="profFsp" placeholder="FSP 12345"></div>
+      <div class="fg"><label class="fl">Insurance Focus Areas</label><input class="fi" id="profFocus" placeholder="e.g. Fleet, Liability, Goods-in-Transit, Engineering Works"></div>
+      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--sub);margin:20px 0 14px">Automation</div>
+      <div class="fg"><label class="fl">Calendly / Booking Link</label><input class="fi" id="profCal" placeholder="https://calendly.com/mpofum/30min"></div>
+      <div class="fg"><label class="fl">Email Signature <span style="font-size:11px;color:var(--blue);font-weight:400">— auto-appended to all outreach</span></label><textarea class="fi" id="profSig" rows="4" placeholder="Mpofuma&#10;Commercial Insurance Specialist&#10;OUTsurance | FSP 12345&#10;mpofum@out.co.za | 082 555 1234"></textarea></div>
+      <div class="fg"><label class="fl">n8n Webhook URL</label><input class="fi" id="profN8n" placeholder="https://leadflow7.app.n8n.cloud/webhook/leadflow-mine"></div>
+      <div class="fg"><label class="fl">Brevo API Key <span style="font-size:11px;color:var(--blue);font-weight:400">— 300 free emails/day</span></label><input class="fi" id="profBrevo" placeholder="xsmtpsib-..."></div>
+      <button class="btn btn-p" style="margin-top:4px" onclick="ripple(this);saveProfile()">Save Profile</button>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:16px">
+        <div style="font-size:13px;font-weight:700;margin-bottom:14px">System Status</div>
+        <div class="svc-row"><span class="svc-dot" id="svcDbDot"></span><span class="svc-name">Database</span><span class="svc-val" id="svcDbVal">Checking...</span></div>
+        <div class="svc-row"><span class="svc-dot" id="svcEmailDot"></span><span class="svc-name">Email Engine (Brevo)</span><span class="svc-val" id="svcEmailVal">Not configured</span></div>
+        <div class="svc-row"><span class="svc-dot" id="svcAgentDot"></span><span class="svc-name">n8n Agent</span><span class="svc-val" id="svcAgentVal">Not configured</span></div>
+        <div class="svc-row"><span class="svc-dot svc-ok"></span><span class="svc-name">AI Engine (Groq)</span><span class="svc-val" style="color:var(--green)">Free — Active</span></div>
+        <div style="font-size:11px;color:var(--sub);margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">Last run: <span id="svcLastRun">Never</span></div>
+      </div>
+      <div class="card">
+        <div style="font-size:13px;font-weight:700;margin-bottom:12px">Deployment</div>
+        <a href="https://leadflow-lovat.vercel.app" target="_blank" class="btn btn-dark btn-full" style="margin-bottom:8px;text-decoration:none;display:block;text-align:center">Live Site (Vercel)</a>
+        <a href="https://github.com/MikeM26/leadflow" target="_blank" class="btn btn-ghost btn-full" style="margin-bottom:8px;text-decoration:none;display:block;text-align:center">GitHub Repo</a>
+        <a href="https://supabase.com/dashboard/project/mtnqgnrcukombrklezhe" target="_blank" class="btn btn-ghost btn-full" style="text-decoration:none;display:block;text-align:center">Supabase</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /layout -->
+</div><!-- /appWrap -->
+
+<!-- LEAD MODAL -->
+<div class="modal-bg" id="leadModal">
+  <div class="modal">
+    <div class="modal-head"><div class="modal-title" id="modTitle">Lead Details</div><button class="modal-close" onclick="closeM('leadModal')">×</button></div>
+    <div id="modBody"></div>
+    <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap">
+      <button class="btn btn-p btn-sm" onclick="ripple(this);emailFromLead()">Draft Email</button>
+      <button class="btn btn-ghost btn-sm" onclick="ripple(this);scriptFromLead()">Call Script</button>
+      <button class="btn btn-ghost btn-sm" onclick="ripple(this);markWon()">Mark Won</button>
+      <button class="btn btn-ghost btn-sm" onclick="ripple(this);markDNC()">DNC</button>
+      <button class="btn btn-danger btn-sm" onclick="ripple(this);deleteLead()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- APPROVAL MODAL -->
+<div class="modal-bg" id="apprModal">
+  <div class="modal">
+    <div class="modal-head"><div class="modal-title" id="apT">Approve Email</div><button class="modal-close" onclick="closeM('apprModal')">×</button></div>
+    <div style="font-size:12px;color:var(--sub);margin-bottom:8px" id="apSub"></div>
+    <textarea class="fi" id="apBody" rows="12" style="font-family:monospace;font-size:12px"></textarea>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn btn-p" onclick="ripple(this);appAppr()">Approve & Send</button>
+      <button class="btn btn-ghost" onclick="ripple(this);rejAppr()">Reject</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+/* ══ CONFIG ══════════════════════════════════════ */
+const SB='https://mtnqgnrcukombrklezhe.supabase.co';
+const SK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10bnFnbnJjdWtvbWJya2xlemhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NzY1NzQsImV4cCI6MjA4NzQ1MjU3NH0.Y_RBIjB1N_SEwNaLVg85R5wIRkXY199AiGRdqCzGhz8';
+const GROQ_KEY='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';
+const TITLES={home:'Command Centre',agent:'AI Agent',pipeline:'Pipeline',followups:'Follow-ups',import:'Import Leads',email:'Email Generator',search:'AI Search',script:'Call Script',stats:'Stats',profile:'Broker Profile'};
+
+/* ══ STATE ═══════════════════════════════════════ */
+let user={id:'broker',email:'mpofum@out.co.za',name:'Mpofuma',token:''};
+let leads=[], profile={}, stats={emails:0,calls:0,deals:0,meetings:0};
+let addedIds=new Set(), actLog=[], apprs=[], apprIdx=null, curLid=null;
+let autLvl='supervised', agtCfg={score:true,fu:true,draft:true,book:false};
+
+/* ══ DB ══════════════════════════════════════════ */
+async function db(path,opts={}){
+  const method=opts.method||'GET';
+  const headers={'apikey':SK,'Authorization':'Bearer '+SK,'Content-Type':'application/json',...(opts.headers||{})};
+  if(method==='POST') headers['Prefer']='return=representation,resolution=ignore-duplicates';
+  if(method==='PATCH') headers['Prefer']='return=minimal';
+  const r=await fetch(SB+'/rest/v1/'+path,{method,headers,body:opts.body});
+  if(!r.ok){const e=await r.text();throw new Error(r.status+': '+e);}
+  const txt=await r.text();
+  return txt?JSON.parse(txt):null;
+}
+
+/* ══ NAVIGATION ══════════════════════════════════ */
+function goto(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.sb-item').forEach(b=>b.classList.remove('on'));
+  const p=document.getElementById('page-'+id);if(p)p.classList.add('on');
+  const n=document.getElementById('nav-'+id);if(n)n.classList.add('on');
+  const t=document.getElementById('tnTitle');if(t)t.textContent=TITLES[id]||id;
+  if(id==='pipeline')renderPipe();
+  if(id==='followups')renderFU();
+  if(id==='stats')renderStats();
+  if(id==='home')refreshHome();
+  if(id==='agent')renderApprs();
+  if(id==='email')populateLeadPicker();
+  if(id==='script')populateScriptPicker();
+  if(id==='profile')updateSvcStatus();
+  window.scrollTo(0,0);
+}
+
+/* ══ LOAD DATA ═══════════════════════════════════ */
+async function loadLeads(){
+  try{
+    const d=await db('leads?order=created_at.desc&limit=500');
+    leads=d||[];
+    addedIds=new Set(leads.map(l=>l.source_id).filter(Boolean));
+    const badge=document.getElementById('pipeBadge');
+    if(badge)badge.textContent=leads.length;
+    aLog('Pipeline loaded — '+leads.length+' leads','ok');
+  }catch(e){aLog('DB error: '+e.message,'w');leads=[];}
+}
+
+async function loadProfile(){
+  try{
+    const d=await db('profiles?limit=1');
+    if(d&&d.length){
+      profile=d[0];
+      const fmap={Name:'name',Phone:'phone',Branch:'branch',Email:'email',Company:'company',Fsp:'fsp',Focus:'focus',Cal:'calendly',Sig:'signature',N8n:'n8n_webhook',Brevo:'brevo_key'};
+      Object.entries(fmap).forEach(([id,key])=>{
+        const el=document.getElementById('prof'+id);
+        if(el&&profile[key])el.value=profile[key];
+      });
+    }
+  }catch(e){aLog('Profile load: '+e.message,'w');}
+  // Also load from localStorage fallback
+  try{const k=localStorage.getItem('lf_brevo_key');if(k&&!profile.brevo_key)profile.brevo_key=k;}catch(e){}
+  try{const n=localStorage.getItem('lf_n8n');if(n&&!profile.n8n_webhook)profile.n8n_webhook=n;}catch(e){}
+}
+
+/* ══ SAVE PROFILE ════════════════════════════════ */
+async function saveProfile(){
+  const g=id=>document.getElementById(id)?.value||'';
+  profile.name=g('profName');profile.phone=g('profPhone');
+  profile.branch=g('profBranch');profile.email=g('profEmail');
+  profile.company=g('profCompany');profile.fsp=g('profFsp');
+  profile.focus=g('profFocus');profile.calendly=g('profCal');
+  profile.signature=g('profSig');
+  profile.n8n_webhook=g('profN8n').trim();
+  profile.brevo_key=g('profBrevo').trim();
+  try{localStorage.setItem('lf_brevo_key',profile.brevo_key);}catch(e){}
+  try{localStorage.setItem('lf_n8n',profile.n8n_webhook);}catch(e){}
+  // Save to DB
+  try{
+    const rec={name:profile.name,phone:profile.phone,branch:profile.branch,email:profile.email,
+      company:profile.company,fsp:profile.fsp,focus:profile.focus,calendly:profile.calendly,
+      signature:profile.signature,n8n_webhook:profile.n8n_webhook,brevo_key:profile.brevo_key};
+    // Try PATCH first, then POST
+    if(profile.id){
+      await db('profiles?id=eq.'+profile.id,{method:'PATCH',body:JSON.stringify(rec)});
+    } else {
+      const r=await db('profiles',{method:'POST',body:JSON.stringify(rec)});
+      if(r&&r[0])profile.id=r[0].id;
+    }
+    toast('Profile saved');
+    aLog('Profile saved','ok');
+    updateSvcStatus();
+    // Update sidebar name
+    const un=document.getElementById('userNameEl');if(un&&profile.name)un.textContent=profile.name;
+    const ue=document.getElementById('userEmailEl');if(ue&&profile.email)ue.textContent=profile.email;
+    const av=document.getElementById('userAv');if(av&&profile.name)av.textContent=profile.name.charAt(0).toUpperCase();
+  }catch(e){toast('Error saving: '+e.message);aLog('Profile save error: '+e.message,'w');}
+}
+
+/* ══ SYSTEM STATUS ═══════════════════════════════ */
+function updateSvcStatus(){
+  const dbDot=document.getElementById('svcDbDot'),dbVal=document.getElementById('svcDbVal');
+  if(dbDot)dbDot.className='svc-dot svc-ok';
+  if(dbVal){dbVal.textContent=leads.length+' leads — Connected';dbVal.style.color='var(--green)';}
+  const hasBrevo=!!(profile.brevo_key&&profile.brevo_key.length>10);
+  const eDot=document.getElementById('svcEmailDot'),eVal=document.getElementById('svcEmailVal');
+  if(eDot)eDot.className='svc-dot '+(hasBrevo?'svc-ok':'svc-err');
+  if(eVal){eVal.textContent=hasBrevo?'Brevo — Connected':'Add Brevo API key in Profile';eVal.style.color=hasBrevo?'var(--green)':'var(--red)';}
+  const hasN8n=!!(profile.n8n_webhook&&profile.n8n_webhook.includes('n8n'));
+  const nDot=document.getElementById('svcAgentDot'),nVal=document.getElementById('svcAgentVal');
+  if(nDot)nDot.className='svc-dot '+(hasN8n?'svc-ok':'svc-warn');
+  if(nVal){nVal.textContent=hasN8n?'Webhook live':'Add n8n URL in Profile';nVal.style.color=hasN8n?'var(--green)':'var(--orange)';}
+  try{const t=localStorage.getItem('lf_last_run');const lr=document.getElementById('svcLastRun');if(lr)lr.textContent=t||'Never';}catch(e){}
+}
+
+/* ══ PIPELINE ════════════════════════════════════ */
+function renderPipe(){
+  const el=document.getElementById('pipeList');if(!el)return;
+  const filter=document.getElementById('pipeFilter')?.value||'';
+  const sub=document.getElementById('pipeSubtitle');
+  let list=filter?leads.filter(l=>l.status===filter):leads;
+  if(sub)sub.textContent=list.length+' leads'+(filter?' — '+filter:'');
+  if(!list.length){el.innerHTML='<div style="color:var(--muted);text-align:center;padding:40px;font-size:13px">No leads yet — use Import or AI Search to add leads</div>';return;}
+  el.innerHTML=list.map((l,i)=>{
+    const sc=l.score||2;
+    const cls=sc>=4?'score-hot':sc>=3?'score-warm':'score-cold';
+    const pill=l.status==='Won'?'pill-won':l.status==='Hot'?'pill-hot':l.status==='Warm'?'pill-warm':'pill-cold';
+    return `<div class="lead-row" onclick="openLead('${l.id}')">
+      <div class="lead-score ${cls}">${sc}</div>
+      <div style="flex:1">
+        <div class="lead-co">${esc(l.company||'')}</div>
+        <div class="lead-meta">${esc(l.industry||'')}${l.address?' · '+esc(l.address):''}${l.contact?' · '+esc(l.contact):''}</div>
+      </div>
+      <div class="lead-actions">
+        <span class="status-pill ${pill}">${esc(l.status||'Cold')}</span>
+        <button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();quickEmail('${l.id}')">Email</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openLead(id){
+  const l=leads.find(x=>x.id===id);if(!l)return;
+  curLid=id;
+  document.getElementById('modTitle').textContent=l.company||'Lead';
+  document.getElementById('modBody').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px">
+      <div><span style="color:var(--sub)">Industry</span><br><strong>${esc(l.industry||'—')}</strong></div>
+      <div><span style="color:var(--sub)">Status</span><br><strong>${esc(l.status||'Cold')}</strong></div>
+      <div><span style="color:var(--sub)">Phone</span><br><strong>${esc(l.phone||'—')}</strong></div>
+      <div><span style="color:var(--sub)">Score</span><br><strong>${l.score||2}/5</strong></div>
+      <div><span style="color:var(--sub)">Contact</span><br><strong>${esc(l.contact||'—')}</strong></div>
+      <div><span style="color:var(--sub)">Follow-up</span><br><strong>${esc(l.followup||'—')}</strong></div>
+      <div style="grid-column:1/-1"><span style="color:var(--sub)">Address</span><br><strong>${esc(l.address||'—')}</strong></div>
+      ${l.notes?`<div style="grid-column:1/-1"><span style="color:var(--sub)">Notes</span><br><span style="font-size:12px">${esc(l.notes)}</span></div>`:''}
+    </div>`;
+  openM('leadModal');
+}
+
+function quickEmail(id){
+  const l=leads.find(x=>x.id===id);if(!l)return;
+  document.getElementById('eCo').value=l.company||'';
+  document.getElementById('eCt').value=l.contact||'';
+  document.getElementById('eInd').value=l.industry||'';
+  document.getElementById('eCity').value=l.address||'';
+  document.getElementById('ePain').value=l.notes||'';
+  goto('email');
+}
+
+function emailFromLead(){
+  closeM('leadModal');
+  if(curLid)quickEmail(curLid);
+}
+
+function scriptFromLead(){
+  const l=leads.find(x=>x.id===curLid);if(!l)return;
+  closeM('leadModal');
+  document.getElementById('scCo').value=l.company||'';
+  document.getElementById('scCt').value=l.contact||'';
+  document.getElementById('scInd').value=l.industry||'';
+  document.getElementById('scPain').value=l.notes||'';
+  goto('script');
+}
+
+async function markWon(){
+  if(!curLid)return;
+  try{await db('leads?id=eq.'+curLid,{method:'PATCH',body:JSON.stringify({status:'Won'})});
+  const l=leads.find(x=>x.id===curLid);if(l)l.status='Won';
+  closeM('leadModal');renderPipe();stats.deals++;saveSt();refreshHome();toast('Marked as Won');aLog(l?.company+' marked Won','ok');}
+  catch(e){toast('Error: '+e.message);}
+}
+
+async function markDNC(){
+  if(!curLid)return;
+  try{await db('leads?id=eq.'+curLid,{method:'PATCH',body:JSON.stringify({status:'DNC'})});
+  const l=leads.find(x=>x.id===curLid);if(l)l.status='DNC';
+  closeM('leadModal');renderPipe();toast('Marked DNC');}
+  catch(e){toast('Error: '+e.message);}
+}
+
+async function deleteLead(){
+  if(!curLid||!confirm('Delete this lead?'))return;
+  try{await db('leads?id=eq.'+curLid,{method:'DELETE'});
+  leads=leads.filter(x=>x.id!==curLid);
+  closeM('leadModal');renderPipe();refreshHome();toast('Lead deleted');
+  const badge=document.getElementById('pipeBadge');if(badge)badge.textContent=leads.length;}
+  catch(e){toast('Error: '+e.message);}
+}
+
+/* ══ FOLLOW-UPS ══════════════════════════════════ */
+function renderFU(){
+  const el=document.getElementById('fuList');if(!el)return;
+  const today=new Date();today.setHours(0,0,0,0);
+  const due=leads.filter(l=>{
+    if(!l.followup||l.status==='Won'||l.status==='DNC')return false;
+    return new Date(l.followup)<=new Date(today.getTime()+86400000*3);
+  }).sort((a,b)=>new Date(a.followup)-new Date(b.followup));
+  const badge=document.getElementById('fuBadge');
+  const overdue=due.filter(l=>new Date(l.followup)<today).length;
+  if(badge){badge.textContent=due.length;badge.style.display=due.length?'inline':'none';}
+  if(!due.length){el.innerHTML='<div style="color:var(--muted);font-size:13px;padding:20px 0">No follow-ups due in next 3 days</div>';return;}
+  el.innerHTML=due.map(l=>{
+    const fd=new Date(l.followup);fd.setHours(0,0,0,0);
+    const isOD=fd<today;
+    const daysLeft=Math.ceil((fd-today)/86400000);
+    const label=isOD?'Overdue':daysLeft===0?'Today':'In '+daysLeft+' day'+(daysLeft===1?'':'s');
+    return `<div class="fu-row ${isOD?'fu-overdue':'fu-due'}">
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:700">${esc(l.company||'')}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">${esc(l.industry||'')}${l.contact?' · '+esc(l.contact):''}</div>
+      </div>
+      <div style="font-size:12px;font-weight:600;color:${isOD?'var(--red)':'var(--orange)'};">${label}</div>
+      <div style="display:flex;gap:6px;margin-left:12px">
+        <button class="btn btn-ghost btn-xs" onclick="quickEmail('${l.id}')">Email</button>
+        <button class="btn btn-ghost btn-xs" onclick="snoozeFU('${l.id}')">Snooze 3d</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function snoozeFU(id){
+  const l=leads.find(x=>x.id===id);if(!l)return;
+  const fu=new Date();fu.setDate(fu.getDate()+3);
+  const fStr=fu.toISOString().split('T')[0];
+  try{await db('leads?id=eq.'+id,{method:'PATCH',body:JSON.stringify({followup:fStr})});
+  l.followup=fStr;renderFU();toast('Snoozed 3 days');}
+  catch(e){toast('Error: '+e.message);}
+}
+
+/* ══ MANUAL ADD ══════════════════════════════════ */
+async function addManual(){
+  const co=document.getElementById('manCo')?.value.trim();
+  if(!co){document.getElementById('manualMsg').innerHTML='<span style="color:var(--red)">Company name required</span>';return;}
+  const slug=co.toLowerCase().replace(/[^a-z0-9]+/g,'-');
+  if(addedIds.has(slug)){document.getElementById('manualMsg').innerHTML='<span style="color:var(--orange)">Already in pipeline</span>';return;}
+  const fu=new Date();fu.setDate(fu.getDate()+2);
+  const rec={company:co,phone:document.getElementById('manPhone')?.value||'',
+    industry:document.getElementById('manInd')?.value||'',
+    contact:document.getElementById('manContact')?.value||'',
+    address:document.getElementById('manCity')?.value||'',
+    website:document.getElementById('manWeb')?.value||'',
+    source:'Manual',source_id:slug,status:'Cold',score:2,
+    followup:fu.toISOString().split('T')[0],created_at:new Date().toISOString()};
+  try{
+    const r=await db('leads',{method:'POST',body:JSON.stringify(rec)});
+    const saved=Array.isArray(r)?r[0]:r;
+    if(saved){leads.unshift(saved);addedIds.add(slug);}
+    else leads.unshift({...rec,id:'local-'+Date.now()});
+    const badge=document.getElementById('pipeBadge');if(badge)badge.textContent=leads.length;
+    document.getElementById('manualMsg').innerHTML='<span style="color:var(--green)">Added to pipeline</span>';
+    ['manCo','manPhone','manInd','manContact','manCity','manWeb'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    refreshHome();aLog('Added: '+co,'ok');addAct('Added '+co,'ok');
+    setTimeout(()=>{const m=document.getElementById('manualMsg');if(m)m.innerHTML='';},3000);
+  }catch(e){document.getElementById('manualMsg').innerHTML='<span style="color:var(--red)">Error: '+e.message+'</span>';}
+}
+
+/* ══ CSV IMPORT ══════════════════════════════════ */
+function handleFile(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{document.getElementById('csvPaste').value=e.target.result;previewImport();};
+  reader.readAsText(file);
+}
+
+function handleDrop(e){
+  e.preventDefault();document.getElementById('dropZone').classList.remove('drag');
+  const file=e.dataTransfer.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{document.getElementById('csvPaste').value=ev.target.result;previewImport();};
+  reader.readAsText(file);
+}
+
+function parseCSV(text){
+  const lines=text.trim().split('\n').filter(l=>l.trim());
+  if(lines.length<2)return[];
+  const headers=lines[0].split(',').map(h=>h.trim().toLowerCase().replace(/[^a-z0-9]/g,''));
+  const col=k=>headers.findIndex(h=>h.includes(k));
+  const rows=[];
+  for(let i=1;i<lines.length;i++){
+    const parts=lines[i].split(',');
+    const co=(parts[col('company')]||parts[col('name')]||parts[0]||'').trim().replace(/^"|"$/g,'');
+    if(!co)continue;
+    rows.push({company:co,phone:(parts[col('phone')]||'').trim().replace(/^"|"$/g,''),
+      industry:(parts[col('industry')]||'').trim().replace(/^"|"$/g,''),
+      address:(parts[col('city')]||parts[col('address')]||'').trim().replace(/^"|"$/g,''),
+      contact:(parts[col('contact')]||parts[col('name')]||'').trim().replace(/^"|"$/g,'')});
+  }
+  return rows;
+}
+
+async function previewImport(){
+  const text=document.getElementById('csvPaste')?.value||'';
+  const rows=parseCSV(text);
+  if(!rows.length){document.getElementById('importPrev').innerHTML='<div style="color:var(--red);font-size:13px">No valid rows found. Check format.</div>';return;}
+  document.getElementById('importPrev').innerHTML=`<div style="font-size:13px;color:var(--sub);margin-bottom:8px">${rows.length} rows found — importing...</div>`;
+  await doImport(rows);
+}
+
+async function doImport(rows){
+  let added=0,skip=0,errs=0;
+  const fu=new Date();fu.setDate(fu.getDate()+2);
+  for(const row of rows){
+    const slug=row.company.toLowerCase().replace(/[^a-z0-9]+/g,'-');
+    if(addedIds.has(slug)){skip++;continue;}
+    const rec={company:row.company,phone:row.phone,industry:row.industry,
+      address:row.address,contact:row.contact,source:'Import',
+      source_id:slug+'_'+Date.now(),status:'Cold',score:2,
+      followup:fu.toISOString().split('T')[0],created_at:new Date().toISOString()};
+    try{
+      const r=await db('leads',{method:'POST',body:JSON.stringify(rec)});
+      const sv=Array.isArray(r)?r[0]:r;
+      leads.unshift(sv||{...rec,id:'local-'+Date.now()});
+      addedIds.add(slug);added++;
+    }catch(e){errs++;aLog('Import err: '+row.company+' — '+e.message,'w');}
+  }
+  const col=errs>0?'var(--red)':added>0?'var(--green)':'var(--orange)';
+  document.getElementById('importPrev').innerHTML=`<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;font-size:13px;font-weight:700;color:${col}">Import done: ${added} added · ${skip} skipped · ${errs} errors</div>`;
+  const badge=document.getElementById('pipeBadge');if(badge)badge.textContent=leads.length;
+  refreshHome();aLog('Import: '+added+' added, '+skip+' skip, '+errs+' err','ok');
+}
+
+/* ══ EMAIL GENERATOR ══════════════════════════════ */
+function populateLeadPicker(){
+  const sel=document.getElementById('eLeadPick');if(!sel)return;
+  sel.innerHTML='<option value="">— Select lead —</option>'+leads.slice(0,50).map(l=>`<option value="${l.id}">${esc(l.company||'')}</option>`).join('');
+}
+
+function pickLead(id){
+  if(!id)return;
+  const l=leads.find(x=>x.id===id);if(!l)return;
+  document.getElementById('eCo').value=l.company||'';
+  document.getElementById('eCt').value=l.contact||'';
+  document.getElementById('eInd').value=l.industry||'';
+  document.getElementById('eCity').value=l.address||'';
+  document.getElementById('ePain').value=l.notes||'';
+}
+
+async function genEmail(){
+  const co=document.getElementById('eCo').value||'the business';
+  const ct=document.getElementById('eCt').value||'the owner';
+  const ind=document.getElementById('eInd').value||'commercial';
+  const city=document.getElementById('eCity').value||'South Africa';
+  const pain=document.getElementById('ePain').value||'';
+  const broker=profile.name||'Mpofuma';
+  const company=profile.company||'OUTsurance';
+  const phone=profile.phone||'';
+  const sig=profile.signature||broker+'\n'+company+(profile.fsp?' | FSP '+profile.fsp:'')+'\nmpofum@out.co.za'+(phone?' | '+phone:'');
+
+  const btn=document.getElementById('genBtn');
+  if(btn){btn.disabled=true;btn.textContent='Generating...';}
+  document.getElementById('eStatus').textContent='Writing email with Groq AI...';
+
+  try{
+    const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+GROQ_KEY,'Content-Type':'application/json'},
+      body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:350,temperature:0.8,
+        messages:[
+          {role:'system',content:'You are a sharp South African commercial insurance broker. Write short punchy cold emails. Max 80 words in body. No fluff.'},
+          {role:'user',content:`Write a cold email to ${ct} at ${co}, a ${ind} business in ${city}.\nRisk/Pain: ${pain||'typical '+ind+' risks'}\n\nRules: max 80 words, 1 SA risk insight, CTA = free 15-min policy review.\n\nFormat:\nSUBJECT: [subject]\nBODY:\n[body]`}
+        ]})
+    });
+    const data=await r.json();
+    const text=data.choices?.[0]?.message?.content||'';
+    const subMatch=text.match(/SUBJECT:\s*(.+)/i);
+    const bodyMatch=text.match(/BODY:\s*([\s\S]+)/i);
+    const subject=subMatch?subMatch[1].trim():co+' — Insurance question';
+    const body=bodyMatch?bodyMatch[1].trim():'Good day '+ct+',\n\nI work with '+ind+' businesses in '+city+'. Most have gaps or overpay around commercial liability.\n\nFree 15-min policy review — no obligation. Worth it?\n\n'+sig;
+    document.getElementById('eOut').value='Subject: '+subject+'\n\n'+body+'\n\n'+sig;
+    document.getElementById('eStatus').textContent='Generated by Groq AI — review before sending';
+    stats.emails++;saveSt();refreshHome();aLog('Email drafted for '+co,'ok');
+  }catch(e){
+    // Fallback template
+    document.getElementById('eOut').value='Subject: '+co+' — Insurance question\n\nGood day '+ct+',\n\nI work with '+ind+' businesses in '+city+'. Most are either overpaying or have gaps in their cover.\n\nFree 15-minute policy review — no obligation.\n\nAre you available this week?\n\n'+sig;
+    document.getElementById('eStatus').textContent='Used template (Groq unavailable: '+e.message+')';
+  }
+  if(btn){btn.disabled=false;btn.textContent='Generate Email';}
+}
+
+function copyEmail(){
+  const el=document.getElementById('eOut');if(!el)return;
+  navigator.clipboard.writeText(el.value).then(()=>toast('Copied to clipboard')).catch(()=>{el.select();document.execCommand('copy');toast('Copied');});
+}
+
+function openOutlook(){
+  const txt=document.getElementById('eOut')?.value||'';
+  const subMatch=txt.match(/^Subject:\s*(.+)/m);
+  const s=subMatch?subMatch[1].trim():'Insurance Review';
+  const b=txt.replace(/^Subject:[^\n]*/m,'').trim();
+  window.open('https://outlook.office.com/mail/deeplink/compose?subject='+encodeURIComponent(s)+'&body='+encodeURIComponent(b),'_blank');
+}
+
+/* ══ AI SEARCH ═══════════════════════════════════ */
+async function runAI(){
+  const ind=document.getElementById('srchInd')?.value||'Construction';
+  const city=document.getElementById('srchCity')?.value||'Johannesburg';
+  const prov=document.getElementById('srchProv')?.value||'Gauteng';
+  const btn=document.getElementById('srchBtn');
+  const res=document.getElementById('srchResults');
+  if(btn){btn.disabled=true;btn.textContent='Searching...';}
+  res.innerHTML='<div style="color:var(--sub);font-size:13px;padding:20px 0">Finding '+ind+' businesses in '+city+'...</div>';
+  try{
+    const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+GROQ_KEY,'Content-Type':'application/json'},
+      body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:2000,temperature:0.6,
+        messages:[
+          {role:'system',content:'You are a SA commercial insurance lead researcher. Return ONLY valid JSON arrays, no markdown.'},
+          {role:'user',content:`Find 10 real ${ind} businesses in ${city}, ${prov}, South Africa. Return JSON array, each object: {name,address,phone,contact,industry,website,size,risk_profile,pain_point,source_id}`}
+        ]})
+    });
+    const data=await r.json();
+    const text=data.choices?.[0]?.message?.content||'';
+    const clean=text.replace(/```json/gi,'').replace(/```/g,'').trim();
+    const a1=clean.indexOf('['),a2=clean.lastIndexOf(']');
+    if(a1===-1)throw new Error('No results returned');
+    const results=JSON.parse(clean.slice(a1,a2+1));
+    res.innerHTML=results.map((l,i)=>{
+      const inPipe=addedIds.has((l.source_id||l.name.toLowerCase().replace(/[^a-z0-9]+/g,'-'))+'-'+city.toLowerCase().replace(/\s/g,'-'));
+      return `<div class="srch-card">
+        <div class="srch-body">
+          <div class="srch-co">${esc(l.name||'')}</div>
+          <div class="srch-meta">${esc(l.industry||ind)} · ${esc(l.address||city)}${l.phone?' · '+esc(l.phone):''}</div>
+          <div class="srch-risk">${esc(l.risk_profile||'')}${l.pain_point?' · <strong>Gap:</strong> '+esc(l.pain_point):''}</div>
+        </div>
+        <div style="flex-shrink:0">
+          ${inPipe?'<span style="font-size:11px;color:var(--green);font-weight:600">In Pipeline</span>':
+          `<button class="btn btn-p btn-sm" onclick="addSrch(${i},'${city}')">+ Add</button>`}
+        </div>
+      </div>`;
+    }).join('');
+    window._srchResults=results;
+    window._srchCity=city;
+    window._srchInd=ind;
+    aLog('Found '+results.length+' leads in '+city,'ok');
+    try{localStorage.setItem('lf_last_run',new Date().toLocaleString('en-ZA'));}catch(e){}
+  }catch(e){
+    res.innerHTML=`<div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:var(--r);padding:20px;text-align:center">
+      <div style="color:var(--red);font-weight:700;margin-bottom:6px">Search Error</div>
+      <div style="font-size:13px;color:var(--sub)">${esc(e.message)}</div>
+    </div>`;
+  }
+  if(btn){btn.disabled=false;btn.textContent='Search';}
+}
+
+async function addSrch(idx,city){
+  const results=window._srchResults;if(!results||!results[idx])return;
+  const l=results[idx];
+  const slug=(l.source_id||l.name.toLowerCase().replace(/[^a-z0-9]+/g,'-'))+'-'+city.toLowerCase().replace(/\s/g,'-');
+  if(addedIds.has(slug)){toast('Already in pipeline');return;}
+  const fu=new Date();fu.setDate(fu.getDate()+2);
+  const rec={company:l.name,phone:l.phone||'',contact:l.contact||'',industry:l.industry||window._srchInd||'',
+    address:l.address||city,website:l.website||'',source:'AI Search',source_id:slug,
+    status:'Cold',score:2,followup:fu.toISOString().split('T')[0],
+    notes:'Risk: '+(l.risk_profile||'')+' | Pain: '+(l.pain_point||''),
+    created_at:new Date().toISOString()};
+  try{
+    const r=await db('leads',{method:'POST',body:JSON.stringify(rec)});
+    const sv=Array.isArray(r)?r[0]:r;
+    leads.unshift(sv||{...rec,id:'local-'+Date.now()});
+    addedIds.add(slug);
+    const badge=document.getElementById('pipeBadge');if(badge)badge.textContent=leads.length;
+    // Update button in results
+    const cards=document.querySelectorAll('.srch-card');
+    if(cards[idx]){const b=cards[idx].querySelector('button');if(b)b.outerHTML='<span style="font-size:11px;color:var(--green);font-weight:600">Added</span>';}
+    toast(l.name+' added to pipeline');
+    addAct('Found: '+l.name,'ok');
+  }catch(e){toast('Error: '+e.message);}
+}
+
+/* ══ CALL SCRIPT ══════════════════════════════════ */
+function populateScriptPicker(){
+  const sel=document.getElementById('scLeadPick');if(!sel)return;
+  sel.innerHTML='<option value="">— Select lead —</option>'+leads.slice(0,50).map(l=>`<option value="${l.id}">${esc(l.company||'')}</option>`).join('');
+}
+
+function pickLeadScript(id){
+  if(!id)return;
+  const l=leads.find(x=>x.id===id);if(!l)return;
+  document.getElementById('scCo').value=l.company||'';
+  document.getElementById('scCt').value=l.contact||'';
+  document.getElementById('scInd').value=l.industry||'';
+  document.getElementById('scPain').value=l.notes||'';
+}
+
+async function genScript(){
+  const co=document.getElementById('scCo').value||'the business';
+  const ct=document.getElementById('scCt').value||'the owner';
+  const ind=document.getElementById('scInd').value||'commercial';
+  const pain=document.getElementById('scPain').value||'';
+  const broker=profile.name||'Mpofuma';
+  const company=profile.company||'OUTsurance';
+  const out=document.getElementById('scriptOut');
+  out.textContent='Generating script...';
+  try{
+    const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+GROQ_KEY,'Content-Type':'application/json'},
+      body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:600,
+        messages:[
+          {role:'system',content:'You are a SA commercial insurance broker. Write clear, confident cold call scripts.'},
+          {role:'user',content:`Write a cold call script for ${broker} from ${company} calling ${ct} at ${co} (${ind}).\nKnown pain: ${pain||'typical '+ind+' risks'}\n\nInclude: opener, permission ask, value prop (15-min free review), handle 2 objections, close for meeting.\nFormat with clear sections.`}
+        ]})
+    });
+    const data=await r.json();
+    out.textContent=data.choices?.[0]?.message?.content||'Could not generate script.';
+  }catch(e){
+    out.textContent=`COLD CALL SCRIPT — ${co}\n\n[OPENER]\n"Good day, may I speak with ${ct}? Hi ${ct}, my name is ${broker} from ${company}. I'm a commercial insurance specialist covering ${ind} businesses in the area."\n\n[VALUE PROP]\n"I'm reaching out because I've helped several ${ind} businesses reduce their premiums by 15-30% while actually improving their cover. I'd love to offer ${co} a free 15-minute policy review — no obligation, just clarity."\n\n[HANDLE OBJECTION — Not interested]\n"I completely understand. Can I ask — when last did someone review your current cover? Most businesses I speak to have at least one significant gap they weren't aware of."\n\n[CLOSE]\n"I only need 15 minutes. Would Tuesday or Wednesday work for a quick call?"\n\n— ${broker} | ${company} | mpofum@out.co.za`;
+  }
+}
+
+/* ══ STATS ═══════════════════════════════════════ */
+function renderStats(){
+  loadSt();
+  document.getElementById('st-leads').textContent=leads.length;
+  document.getElementById('st-hot').textContent=leads.filter(l=>l.score>=4).length;
+  document.getElementById('st-warm').textContent=leads.filter(l=>l.score===3).length;
+  document.getElementById('st-emails').textContent=stats.emails||0;
+  document.getElementById('st-meetings').textContent=stats.meetings||0;
+  document.getElementById('st-won').textContent=leads.filter(l=>l.status==='Won').length;
+}
+
+function logEmail(){stats.emails=(stats.emails||0)+1;saveSt();renderStats();refreshHome();toast('Email logged');addAct('Email sent','ok');}
+function logMeeting(){stats.meetings=(stats.meetings||0)+1;saveSt();renderStats();refreshHome();toast('Meeting logged');addAct('Meeting booked','ok');}
+function logDeal(){stats.deals=(stats.deals||0)+1;saveSt();renderStats();refreshHome();toast('Deal logged');addAct('Deal won','ok');}
+function resetStats(){if(!confirm('Reset all stats?'))return;stats={emails:0,calls:0,deals:0,meetings:0};saveSt();renderStats();refreshHome();toast('Stats reset');}
+function loadSt(){try{const s=JSON.parse(localStorage.getItem('lf_st')||'{}');Object.assign(stats,s);}catch(e){}}
+function saveSt(){try{localStorage.setItem('lf_st',JSON.stringify(stats));}catch(e){}}
+
+/* ══ REFRESH HOME ════════════════════════════════ */
+function refreshHome(){
+  const today=new Date();today.setHours(0,0,0,0);
+  const hot=leads.filter(l=>l.score>=4).length;
+  const od=leads.filter(l=>{if(!l.followup||l.status==='Won'||l.status==='DNC')return false;const fd=new Date(l.followup);fd.setHours(0,0,0,0);return fd<today;}).length;
+  const pipe=leads.reduce((a,l)=>{const e=l.score>=4?25000:l.score>=3?12000:6000;return a+e;},0);
+  const fmt=n=>n>=1000000?'R'+(n/1000000).toFixed(1)+'M':n>=1000?'R'+(n/1000).toFixed(0)+'k':'R'+n;
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  set('m-leads',leads.length);set('m-emails',stats.emails||0);set('m-mtg',stats.meetings||0);set('m-pipe',fmt(pipe));
+  set('ac-mined',leads.length);set('ac-sent',stats.emails||0);set('ac-mtg',stats.meetings||0);
+  set('m-leads-d',hot+' hot · '+od+' overdue');
+  const fuBadge=document.getElementById('fuBadge');
+  const fuCount=leads.filter(l=>{if(!l.followup||l.status==='Won'||l.status==='DNC')return false;return new Date(l.followup)<=new Date(today.getTime()+86400000);}).length;
+  if(fuBadge){fuBadge.textContent=fuCount;fuBadge.style.display=fuCount?'inline':'none';}
+}
+
+/* ══ AGENT ═══════════════════════════════════════ */
+const AUT_DESC={supervised:'Every email requires your approval before sending',semi:'Follow-ups are automatic. First outreach needs approval.',full:'Fully autonomous — no approval needed (use with caution)'};
+
+function setAut(lvl,silent){
+  autLvl=lvl;
+  ['supervised','semi','full'].forEach(l=>{const b=document.getElementById('aut-'+l);if(b)b.classList.toggle('on',l===lvl);});
+  const desc=document.getElementById('autDesc');if(desc)desc.textContent=AUT_DESC[lvl]||'';
+  try{localStorage.setItem('lf_aut',lvl);}catch(e){}
+  if(!silent)aLog('Autonomy: '+lvl,'lb');
+}
+
+function saveAgt(){
+  const map={score:'ag_score',fu:'ag_fu',draft:'ag_draft',book:'ag_book'};
+  Object.entries(map).forEach(([k,id])=>{const el=document.getElementById(id);if(el)agtCfg[k]=el.checked;});
+  try{localStorage.setItem('lf_agt',JSON.stringify(agtCfg));}catch(e){}
+  toast('Agent settings saved');
+}
+
+function loadAgt(){
+  try{const s=JSON.parse(localStorage.getItem('lf_agt')||'{}');Object.assign(agtCfg,s);}catch(e){}
+  Object.entries({score:'ag_score',fu:'ag_fu',draft:'ag_draft',book:'ag_book'}).forEach(([k,id])=>{const el=document.getElementById(id);if(el)el.checked=!!agtCfg[k];});
+}
+
+async function runAgent(){
+  if(!profile.n8n_webhook){toast('Add n8n webhook URL in Profile first');goto('profile');return;}
+  aLog('Triggering n8n agent...','lb');
+  try{
+    const r=await fetch(profile.n8n_webhook,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'mine',industry:document.getElementById('srchInd')?.value||'Construction',
+        city:'Johannesburg',province:'Gauteng',broker_name:profile.name||'Mpofuma',
+        broker_email:profile.email||'mpofum@out.co.za',broker_phone:profile.phone||'',
+        calendly_link:profile.calendly||''})});
+    const d=await r.json();
+    aLog('Agent run: '+(d.message||d.status||'Done'),'ok');
+    toast('Agent triggered');
+    setTimeout(loadLeads,3000);
+  }catch(e){aLog('Agent error: '+e.message,'w');toast('Error: '+e.message);}
+}
+
+function renderApprs(){
+  const c=document.getElementById('apprCard'),l=document.getElementById('apprList');
+  if(!apprs.length){if(c)c.style.display='none';return;}
+  if(c)c.style.display='block';
+  const badge=document.getElementById('apprBadge');if(badge)badge.textContent=apprs.length;
+  if(l)l.innerHTML=apprs.map((a,i)=>`<div class="appr-item"><div style="flex:1"><div style="font-size:13px;font-weight:700">${esc(a.title)}</div><div style="font-size:11px;color:var(--muted)">${esc(a.sub||'')}</div></div><div style="display:flex;gap:6px"><button class="btn btn-ghost btn-xs" onclick="dismissAppr(${i})">Skip</button><button class="btn btn-p btn-xs" onclick="openAppr(${i})">Review</button></div></div>`).join('');
+}
+
+function openAppr(i){const a=apprs[i];if(!a)return;apprIdx=i;document.getElementById('apT').textContent=a.title;document.getElementById('apSub').textContent=a.sub||'';document.getElementById('apBody').value=a.body||'';openM('apprModal');}
+function appAppr(){const a=apprs[apprIdx];closeM('apprModal');if(a&&a.onApprove)a.onApprove();dismissAppr(apprIdx);}
+function rejAppr(){closeM('apprModal');if(apprIdx!==null)dismissAppr(apprIdx);}
+function dismissAppr(i){apprs.splice(i,1);apprIdx=null;renderApprs();}
+
+/* ══ ACTIVITY FEED ═══════════════════════════════ */
+function addAct(text,type){
+  const now=new Date();const t=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  actLog.unshift({text,type:type||'li',time:t});
+  if(actLog.length>20)actLog.pop();
+  renderActFeed();
+}
+function renderActFeed(){
+  const el=document.getElementById('actFeed');if(!el)return;
+  if(!actLog.length){el.innerHTML='<div style="color:var(--sub);font-size:13px">No activity yet.</div>';return;}
+  const cols={ok:'var(--green)',w:'var(--orange)',lb:'var(--blue)',li:'var(--muted)'};
+  el.innerHTML=actLog.slice(0,8).map(a=>`<div style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px"><div style="width:6px;height:6px;border-radius:50%;background:${cols[a.type]||'var(--muted)'};flex-shrink:0;margin-top:4px"></div><div style="flex:1;color:var(--text)">${esc(a.text)}</div><div style="color:var(--muted);flex-shrink:0">${a.time}</div></div>`).join('');
+}
+
+/* ══ AGENT LOG ═══════════════════════════════════ */
+function aLog(m,type){
+  const el=document.getElementById('agentLog');if(!el)return;
+  const now=new Date();const t=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0')+':'+now.getSeconds().toString().padStart(2,'0');
+  const cls=type==='ok'?'lo':type==='w'?'lw':type==='lb'?'lb':'li';
+  const d=document.createElement('div');d.className='ll';d.innerHTML=`<span style="color:#475569;margin-right:8px">${t}</span><span class="${cls}">${esc(m)}</span>`;
+  el.insertBefore(d,el.firstChild);if(el.children.length>60)el.removeChild(el.lastChild);
+}
+function clearLog(){const el=document.getElementById('agentLog');if(el)el.innerHTML='<div class="ll li">— Log cleared —</div>';}
+
+/* ══ MODALS ══════════════════════════════════════ */
+function openM(id){const m=document.getElementById(id);if(m)m.classList.add('open');}
+function closeM(id){const m=document.getElementById(id);if(m)m.classList.remove('open');}
+document.addEventListener('click',e=>{document.querySelectorAll('.modal-bg.open').forEach(m=>{if(e.target===m)m.classList.remove('open');});});
+
+/* ══ SIGN OUT ════════════════════════════════════ */
+function doSignOut(){
+  if(window._lf_tick){clearInterval(window._lf_tick);window._lf_tick=null;}
+  try{localStorage.removeItem('lf_s');}catch(e){}
+  toast('Signed out');
+  setTimeout(()=>location.reload(),1000);
+}
+
+/* ══ UTILS ═══════════════════════════════════════ */
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function tick(){const n=new Date();const el=document.getElementById('clockEl');if(el)el.textContent=n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0')+':'+n.getSeconds().toString().padStart(2,'0');}
+function toast(m){const t=document.getElementById('toast');if(!t)return;t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
+function ripple(btn){const r=document.createElement('span');r.className='ripple-effect';const rect=btn.getBoundingClientRect();const size=Math.max(rect.width,rect.height);r.style.width=r.style.height=size+'px';r.style.left=((rect.width-size)/2)+'px';r.style.top=((rect.height-size)/2)+'px';btn.appendChild(r);setTimeout(()=>r.remove(),500);}
+
+/* ══ INIT ════════════════════════════════════════ */
+(async function(){
+  // Set user display
+  const un=document.getElementById('userNameEl');if(un)un.textContent=user.name;
+  const ue=document.getElementById('userEmailEl');if(ue)ue.textContent=user.email;
+  const av=document.getElementById('userAv');if(av)av.textContent='M';
+
+  // Load stats from localStorage
+  loadSt();
+  try{autLvl=localStorage.getItem('lf_aut')||'supervised';}catch(e){}
+
+  // Start clock
+  if(!window._lf_tick)window._lf_tick=setInterval(tick,1000);
+
+  // Load data from Supabase
+  aLog('Connecting to database...','lb');
+  await loadProfile();
+  await loadLeads();
+
+  // Boot
+  loadAgt();
+  setAut(autLvl,true);
+  refreshHome();
+  renderPipe();
+  renderFU();
+  updateSvcStatus();
+  goto('home');
+  aLog('LeadFlow ready — '+leads.length+' leads in pipeline','ok');
+})();
+</script>
+</body>
+</html>
