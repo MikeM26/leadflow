@@ -1,1 +1,1491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LeadFlow — Work Different.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ── RESET ── */
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#F0F2F8;color:#1A202C;min-height:100vh;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font-family:'Inter',sans-serif}
+a{color:#4F6EF7;text-decoration:none}
 
+/* ── TOKENS ── */
+:root{
+  --bg:#F0F2F8;--white:#FFFFFF;--border:#E2E8F0;--border-dark:#CBD5E0;
+  --blue:#4F6EF7;--blue-d:#3451D1;--blue-s:#EEF2FF;
+  --text:#1A202C;--sub:#64748B;--muted:#94A3B8;
+  --green:#10B981;--orange:#F59E0B;--purple:#8B5CF6;--cyan:#06B6D4;--red:#EF4444;
+  --sw:240px;--th:64px;
+  --r:10px;--r-lg:14px;--r-xl:18px;
+  --sh:0 1px 4px rgba(0,0,0,.06),0 0 0 1px rgba(0,0,0,.04);
+  --sh-md:0 4px 16px rgba(0,0,0,.08);
+  --sh-lg:0 8px 32px rgba(0,0,0,.12);
+}
+
+/* ── AUTH ── */
+#authWrap{display:none!important;align-items:center;justify-content:center;min-height:100vh;
+  background:linear-gradient(135deg,#EEF2FF 0%,#F0F2F8 50%,#EDE9FE 100%)}
+.auth-card{background:var(--white);border-radius:20px;box-shadow:var(--sh-lg);padding:44px;width:100%;max-width:420px}
+.auth-logo-row{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.auth-logo-box{width:42px;height:42px;background:var(--blue);border-radius:12px;
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:800;letter-spacing:-.5px}
+.auth-brand{font-size:22px;font-weight:800;color:var(--text)}
+.auth-brand span{color:var(--blue)}
+.auth-tagline-badge{background:#F1F5FF;border:1px solid #C7D2FE;border-radius:6px;
+  padding:3px 10px;font-size:11px;font-weight:700;color:var(--blue);letter-spacing:.3px;margin-left:4px}
+.auth-sub{font-size:13px;color:var(--sub);margin-bottom:28px}
+.auth-tabs{display:grid;grid-template-columns:1fr 1fr 1fr;background:#F8FAFC;border-radius:8px;padding:4px;gap:3px;margin-bottom:22px}
+.auth-tab{padding:7px 4px;text-align:center;border-radius:6px;font-size:13px;font-weight:500;color:var(--sub);cursor:pointer;transition:all .15s}
+.auth-tab.on{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(79,110,247,.3)}
+.auth-err{background:#FFF1F0;border:1px solid #FECACA;border-radius:8px;padding:10px 13px;font-size:13px;color:var(--red);margin-bottom:14px;display:none}
+.auth-ok{background:#ECFDF5;border:1px solid #A7F3D0;border-radius:8px;padding:10px 13px;font-size:13px;color:var(--green);margin-bottom:14px;display:none}
+
+/* ── APP SHELL ── */
+#appWrap{display:block;min-height:100vh}
+.layout{display:flex;min-height:100vh}
+
+/* ── SIDEBAR ── */
+.sidebar{width:var(--sw);background:var(--white);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto}
+.sb-logo{padding:20px 20px 16px;border-bottom:1px solid var(--border)}
+.sb-logo-inner{display:flex;align-items:center;gap:11px}
+.sb-logo-box{width:46px;height:46px;background:var(--blue);border-radius:12px;
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:800;letter-spacing:-.3px;flex-shrink:0}
+.sb-brand{font-size:20px;font-weight:800;color:var(--text)}
+.sb-brand span{color:var(--blue)}
+.sb-tagline{font-size:10px;font-weight:500;color:#B0B8C8;letter-spacing:.2px;margin-top:1px}
+.sb-sec{padding:16px 14px 4px;font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted)}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 12px;margin:1px 8px;
+  border-radius:var(--r);font-size:13px;font-weight:500;color:var(--sub);
+  transition:all .12s;background:none;border:none;width:calc(100% - 16px);text-align:left;cursor:pointer;
+  position:relative;overflow:hidden}
+.sb-item::after{content:'';position:absolute;inset:0;background:var(--blue);opacity:0;border-radius:var(--r);transition:opacity .15s}
+.sb-item:active::after{opacity:.06}
+.sb-item:hover{background:#F8FAFC;color:var(--text)}
+.sb-item.on{background:var(--blue-s);color:var(--blue);font-weight:600}
+.sb-item .ico-wrap{width:22px;height:22px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-badge{margin-left:auto;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;min-width:20px;text-align:center}
+.sb-badge.blue{background:var(--blue)}
+.sb-badge.green{background:var(--green);font-size:9px;letter-spacing:.3px}
+.sb-badge.red{background:var(--red)}
+.sb-badge.orange{background:var(--orange);color:#1a202c}
+.sb-div{height:1px;background:var(--border);margin:8px 16px}
+.sb-user{padding:14px;border-top:1px solid var(--border);margin-top:auto}
+.sb-user-card{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#F8FAFC;border-radius:var(--r)}
+.sb-av{width:32px;height:32px;border-radius:50%;background:var(--blue);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-un{font-size:12px;font-weight:700;color:var(--text)}
+.sb-ur{font-size:10px;color:var(--muted)}
+
+/* ── TOPNAV ── */
+.main-wrap{margin-left:var(--sw);flex:1;display:flex;flex-direction:column}
+.topnav{height:var(--th);background:var(--white);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 28px;gap:14px;position:sticky;top:0;z-index:50}
+.tn-title{font-size:17px;font-weight:700;flex:1}
+.tn-sub{font-size:12px;font-weight:400;color:var(--muted);margin-left:8px}
+.tn-right{display:flex;align-items:center;gap:10px}
+.live-pill{display:flex;align-items:center;gap:6px;background:#ECFDF5;border:1px solid #A7F3D0;
+  border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;color:var(--green)}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse-dot 2s infinite}
+@keyframes pulse-dot{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,.4)}50%{box-shadow:0 0 0 5px rgba(16,185,129,0)}}
+.clock{font-size:12px;font-weight:700;color:var(--blue);background:var(--blue-s);padding:5px 12px;border-radius:6px;font-variant-numeric:tabular-nums}
+
+/* ── PAGES ── */
+.page{padding:26px 28px;display:none;animation:fadeUp .2s ease}
+.page.on{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.pg-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px}
+.pg-title{font-size:22px;font-weight:800;color:var(--text)}
+.pg-sub{font-size:13px;color:var(--sub);margin-top:3px}
+.crumb{font-size:12px;color:var(--muted);margin-bottom:16px}
+.crumb span{color:var(--sub)}
+
+/* ── METRIC CARDS (image ref style) ── */
+.metrics-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+@media(max-width:960px){.metrics-row{grid-template-columns:1fr 1fr}}
+.metric-card{background:var(--white);border-radius:var(--r-xl);box-shadow:var(--sh-md);border:1px solid var(--border);
+  padding:22px 20px;display:flex;align-items:center;gap:18px;
+  transition:transform .2s,box-shadow .2s;cursor:default;position:relative;overflow:hidden}
+.metric-card::before{content:'';position:absolute;inset:0;background:currentColor;opacity:0;transition:opacity .2s;border-radius:var(--r-xl)}
+.metric-card:hover{transform:translateY(-2px);box-shadow:var(--sh-lg)}
+.metric-card:active{transform:translateY(0);box-shadow:var(--sh-md)}
+.metric-icon{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 14px rgba(0,0,0,.15)}
+.metric-icon.green{background:var(--green)}
+.metric-icon.orange{background:var(--orange)}
+.metric-icon.purple{background:var(--purple)}
+.metric-icon.cyan{background:var(--cyan)}
+.metric-icon svg{color:#fff!important;stroke:#fff!important}
+.metric-body .num{font-size:30px;font-weight:800;color:var(--text);line-height:1}
+.metric-body .lbl{font-size:12px;font-weight:600;color:var(--sub);margin-top:4px;text-transform:uppercase;letter-spacing:.4px}
+.metric-body .delta{font-size:11px;font-weight:700;margin-top:5px}
+.delta-up{color:var(--green)}
+.delta-dn{color:var(--red)}
+
+/* ── CARDS ── */
+.card{background:var(--white);border-radius:var(--r-lg);box-shadow:var(--sh);border:1px solid var(--border);padding:22px}
+.card-hd{font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px}
+.card-sd{font-size:12px;color:var(--sub);margin-bottom:14px}
+
+/* ── AGENT STATUS CARD ── */
+.agent-banner{background:linear-gradient(135deg,#1A202C 0%,#2D3748 100%);border-radius:var(--r-xl);
+  padding:26px 28px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;color:#fff;
+  position:relative;overflow:hidden}
+.agent-banner::after{content:'';position:absolute;right:-40px;top:-40px;width:200px;height:200px;
+  border-radius:50%;background:rgba(79,110,247,.15)}
+.ab-left .ab-title{font-size:18px;font-weight:800;margin-bottom:5px}
+.ab-left .ab-sub{font-size:13px;color:#94A3B8;line-height:1.6}
+.ab-status{display:flex;align-items:center;gap:8px;margin-top:12px}
+.ab-dot{width:9px;height:9px;border-radius:50%;background:var(--green);animation:pulse-dot 2s infinite}
+.ab-label{font-size:12px;font-weight:700;color:var(--green)}
+.ab-right{display:flex;gap:10px;position:relative;z-index:1}
+.agent-cycle{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 18px;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;min-width:90px}
+.ac-icon{font-size:22px}
+.ac-num{font-size:20px;font-weight:800}
+.ac-lbl{font-size:10px;color:#94A3B8;text-transform:uppercase;letter-spacing:.5px}
+
+/* ── FORMS ── */
+.fg{margin-bottom:14px}
+.fl{display:block;font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--sub);margin-bottom:5px}
+.fi{width:100%;background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:9px 12px;color:var(--text);font-size:13px;transition:border-color .15s,box-shadow .15s}
+.fi:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(79,110,247,.12);outline:none}
+.fsel{width:100%;background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:9px 12px;color:var(--text);font-size:13px;cursor:pointer}
+.fsel:focus{border-color:var(--blue);outline:none}
+textarea.fi{resize:vertical;min-height:88px;line-height:1.6}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:9px 18px;border-radius:var(--r);font-size:13px;font-weight:600;transition:all .15s;white-space:nowrap;cursor:pointer;border:none;position:relative;overflow:hidden}
+.btn::after{content:'';position:absolute;inset:0;background:#fff;opacity:0;transition:opacity .12s;border-radius:inherit}
+.btn:active::after{opacity:.15}
+.btn-p{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(79,110,247,.35)}
+.btn-p:hover{background:var(--blue-d);transform:translateY(-1px);box-shadow:0 4px 16px rgba(79,110,247,.4)}
+.btn-p:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-s{background:var(--white);color:var(--text);border:1px solid var(--border)}
+.btn-s:hover{background:#F8FAFC}
+.btn-g{background:var(--green);color:#fff;box-shadow:0 2px 8px rgba(16,185,129,.35)}
+.btn-g:hover{background:#059669;transform:translateY(-1px)}
+.btn-r{background:var(--red);color:#fff}
+.btn-r:hover{background:#DC2626}
+.btn-ghost{background:transparent;color:var(--blue);border:1.5px solid var(--blue)}
+.btn-ghost:hover{background:var(--blue-s)}
+.btn-dark{background:#1A202C;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.btn-dark:hover{background:#2D3748;transform:translateY(-1px)}
+.btn-sm{padding:6px 13px;font-size:12px}
+.btn-xs{padding:4px 10px;font-size:11px}
+.btn-full{width:100%}
+
+/* ── PULSE FEEDBACK (global click) ── */
+@keyframes click-pulse{0%{box-shadow:0 0 0 0 rgba(79,110,247,.5)}100%{box-shadow:0 0 0 12px rgba(79,110,247,0)}}
+.pulse{animation:click-pulse .4s ease-out}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:5px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.b-hot{background:#FEF2F2;color:var(--red);border:1px solid #FECACA}
+.b-warm{background:#FFFBEB;color:#92400E;border:1px solid #FDE68A}
+.b-cold{background:#F8FAFC;color:var(--sub);border:1px solid var(--border)}
+.b-cont{background:#EEF2FF;color:var(--blue);border:1px solid #C7D2FE}
+.b-won{background:#ECFDF5;color:#065F46;border:1px solid #A7F3D0}
+.b-lost{background:#FEF2F2;color:var(--red);border:1px solid #FECACA}
+.b-dnc{background:#FDF2F8;color:#86198F;border:1px solid #F0ABFC}
+.b-auto{background:#F5F3FF;color:var(--purple);border:1px solid #DDD6FE}
+
+/* ── LEAD TABLE ── */
+.lead-table{width:100%;border-collapse:collapse}
+.lead-table thead th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--sub);padding:10px 14px;background:#F8FAFC;border-bottom:1px solid var(--border);text-align:left}
+.lead-table tbody td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+.lead-table tbody tr:hover{background:#FAFBFF}
+.lead-table tbody tr:last-child td{border-bottom:none}
+.lead-table tbody tr{transition:background .1s;cursor:pointer}
+
+/* ── PIPELINE BOARD ── */
+.pipe-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+.pipe-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--sh);padding:16px;transition:all .15s;cursor:pointer}
+.pipe-card:hover{transform:translateY(-2px);box-shadow:var(--sh-md)}
+.pipe-card:active{transform:translateY(0)}
+.pc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.pc-name{font-size:14px;font-weight:700;color:var(--text)}
+.pc-meta{font-size:12px;color:var(--sub);line-height:1.9;margin-bottom:10px}
+.pc-score{display:flex;gap:3px;margin-bottom:10px}
+.pip{width:15px;height:5px;border-radius:3px;background:var(--border)}
+.pip.on{background:var(--blue)}
+.fu-chip{font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;margin-bottom:9px;display:inline-block}
+.fu-over{background:#FEF2F2;color:var(--red)}
+.fu-now{background:#FFFBEB;color:#92400E}
+.fu-soon{background:#ECFDF5;color:#065F46}
+.pc-btns{display:flex;gap:6px;flex-wrap:wrap}
+
+/* ── AGENT WORKFLOW ── */
+.workflow-steps{display:flex;gap:0;margin-bottom:24px;overflow-x:auto;padding-bottom:4px}
+.ws{flex:1;min-width:160px;background:var(--white);border:1px solid var(--border);padding:16px;position:relative;text-align:center;cursor:pointer;transition:all .15s}
+.ws:first-child{border-radius:var(--r-lg) 0 0 var(--r-lg)}
+.ws:last-child{border-radius:0 var(--r-lg) var(--r-lg) 0}
+.ws:not(:last-child)::after{content:'›';position:absolute;right:-12px;top:50%;transform:translateY(-50%);font-size:20px;color:var(--muted);z-index:2}
+.ws:hover{background:var(--blue-s)}
+.ws.active{background:var(--blue-s);border-color:var(--blue)}
+.ws-ico{font-size:24px;margin-bottom:6px}
+.ws-lbl{font-size:12px;font-weight:700;color:var(--text)}
+.ws-status{font-size:10px;color:var(--sub);margin-top:3px}
+
+/* ── IMPORT ── */
+.drop-zone{border:2px dashed var(--border);border-radius:var(--r-lg);padding:44px 20px;text-align:center;cursor:pointer;transition:all .2s;background:#FAFBFF}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--blue);background:var(--blue-s)}
+.drop-zone input{display:none}
+.dir-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-bottom:20px}
+.dir-card{display:flex;gap:12px;background:#FAFBFF;border:1px solid var(--border);border-radius:var(--r);padding:13px;align-items:flex-start;transition:all .15s;cursor:pointer}
+.dir-card:hover{background:var(--blue-s);border-color:var(--blue)}
+.dir-ico{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+
+/* ── FU ROWS ── */
+.fu-row{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:14px;transition:box-shadow .15s}
+.fu-row:hover{box-shadow:var(--sh-md)}
+.fu-bar{width:4px;border-radius:2px;align-self:stretch;flex-shrink:0}
+
+/* ── OVERVIEW BARS ── */
+.ov-row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)}
+.ov-row:last-child{border-bottom:none}
+.ov-lbl{width:90px;font-size:12px;color:var(--sub)}
+.ov-track{flex:1;background:#F0F2F8;border-radius:4px;height:7px;overflow:hidden}
+.ov-fill{height:100%;border-radius:4px;background:var(--blue);transition:width .6s ease}
+.ov-n{width:28px;font-size:12px;font-weight:700;text-align:right}
+
+/* ── ACT FEED ── */
+.act-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.act-item:last-child{border-bottom:none}
+.act-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.act-text{font-size:13px;flex:1}
+.act-time{font-size:11px;color:var(--muted);white-space:nowrap}
+
+/* ── CALL SCRIPT ── */
+.step-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px;margin-bottom:10px;display:flex;gap:16px;transition:box-shadow .15s}
+.step-card:hover{box-shadow:var(--sh-md)}
+.step-n{font-size:24px;font-weight:800;color:var(--blue);min-width:28px}
+.step-t{font-size:14px;font-weight:700;margin-bottom:5px}
+.step-b{font-size:13px;color:var(--sub);line-height:1.7}
+
+/* ── EMAIL ── */
+.email-2col{display:grid;grid-template-columns:340px 1fr;gap:20px}
+@media(max-width:900px){.email-2col{grid-template-columns:1fr}}
+.email-area{width:100%;background:#FAFBFF;border:1px solid var(--border);border-radius:var(--r);padding:14px;color:var(--text);font-size:13px;font-family:'Courier New',monospace;resize:vertical;min-height:300px;line-height:1.8}
+.email-area:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(79,110,247,.1);outline:none}
+
+/* ── TOGGLE ── */
+.tog-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.tog-row:last-child{border-bottom:none}
+.tog-t{font-size:13px;font-weight:600}
+.tog-d{font-size:11px;color:var(--muted);margin-top:2px}
+.toggle{position:relative;width:40px;height:22px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.tog-tk{position:absolute;inset:0;background:#DDE1EE;border-radius:11px;cursor:pointer;transition:.2s}
+.toggle input:checked+.tog-tk{background:var(--blue)}
+.tog-tk:before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle input:checked+.tog-tk:before{left:21px}
+
+/* ── MODALS ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:200;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.modal-bg.open{display:flex}
+.modal{background:var(--white);border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.18);width:100%;max-width:500px;max-height:92vh;overflow-y:auto}
+.modal-h{padding:22px 24px 0;display:flex;align-items:center;justify-content:space-between}
+.modal-t{font-size:16px;font-weight:700}
+.modal-x{width:28px;height:28px;border-radius:6px;background:#F8FAFC;font-size:14px;color:var(--sub);display:flex;align-items:center;justify-content:center;cursor:pointer;border:none}
+.modal-b{padding:18px 24px}
+.modal-f{padding:0 24px 22px;display:flex;gap:8px;justify-content:flex-end}
+.modal-pre{background:#F8FAFC;border:1px solid var(--border);border-radius:var(--r);padding:13px;font-size:11.5px;font-family:'Courier New',monospace;line-height:1.8;white-space:pre-wrap;max-height:220px;overflow-y:auto}
+
+/* ── MODULE GRID ── */
+.mod-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.mod-card{background:#F8FAFC;border:1px solid var(--border);border-radius:var(--r);padding:14px;text-align:center;cursor:pointer;transition:all .15s}
+.mod-card:hover{background:var(--blue-s);border-color:var(--blue)}
+.mod-ico{margin-bottom:6px;display:flex;justify-content:center}
+.mod-n{font-size:11px;font-weight:700;color:var(--sub);margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px}
+.ms-g{background:#ECFDF5;color:#065F46;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;display:inline-block}
+.ms-a{background:#FFFBEB;color:#92400E;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;display:inline-block}
+.ms-r{background:#FEF2F2;color:var(--red);font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;display:inline-block}
+
+/* ── AGENT LOG ── */
+.alog{background:#0F172A;border-radius:var(--r);padding:14px;max-height:220px;overflow-y:auto;font-family:'Courier New',monospace;font-size:11px}
+.ll{padding:2px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.lo{color:#34D399}.lw{color:#FBBF24}.li{color:#64748B}.lb{color:#818CF8}
+
+/* ── KEY BOX ── */
+.key-box{background:var(--blue-s);border:1px solid #C7D2FE;border-radius:var(--r-xl);padding:30px;text-align:center}
+.key-box h3{font-size:16px;font-weight:700;color:var(--blue);margin-bottom:8px}
+.key-box p{font-size:13px;color:var(--sub);margin-bottom:18px;line-height:1.7}
+.key-row{display:flex;gap:8px;max-width:460px;margin:0 auto 10px}
+.err-box{background:#FEF2F2;border:1px solid #FECACA;border-radius:var(--r-xl);padding:20px;text-align:center}
+
+/* ── SPINNER ── */
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.dbg{font-size:10px;font-family:'Courier New',monospace;color:var(--blue);background:#EEF2FF;border:1px solid #C7D2FE;border-radius:6px;padding:8px 10px;margin-top:10px;max-height:80px;overflow-y:auto;text-align:left}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:60px 20px;color:var(--sub)}
+.empty-ico{font-size:48px;margin-bottom:12px}
+
+/* ── PROF GRID ── */
+.prof-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:700px){.prof-grid{grid-template-columns:1fr}}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;right:24px;background:#0F172A;color:#fff;border-radius:12px;padding:12px 20px;font-size:13px;font-weight:600;z-index:999;transform:translateY(80px);opacity:0;transition:all .3s;box-shadow:0 8px 32px rgba(0,0,0,.25)}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* ── AUT LEVEL ── */
+.aut-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px}
+.aut-btn{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);padding:14px 10px;text-align:center;cursor:pointer;font-size:13px;font-weight:700;transition:all .15s;display:flex;flex-direction:column;gap:4px;align-items:center}
+.aut-btn:hover{border-color:var(--blue);background:var(--blue-s)}
+.aut-btn.on{border-color:var(--blue);background:var(--blue-s);color:var(--blue)}
+.aut-btn span{font-size:10px;font-weight:400;color:var(--muted)}
+.aut-btn.on span{color:var(--blue)}
+
+/* ── APPROVAL ── */
+.appr-item{background:#F8FAFC;border:1px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .15s}
+.appr-item:hover{border-color:var(--blue);background:var(--blue-s)}
+
+.svc-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.svc-row:last-child{border-bottom:none}
+.svc-dot{width:8px;height:8px;border-radius:50%;background:#E2E8F0;flex-shrink:0}
+.svc-dot.svc-ok{background:var(--green)}
+.svc-dot.svc-err{background:var(--red)}
+.svc-dot.svc-warn{background:var(--orange)}
+.svc-name{flex:1;color:var(--text)}
+.svc-val{font-size:12px;color:var(--sub)}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ AUTH ═══════════ -->
+<div id="authWrap">
+<div class="auth-card">
+  <div class="auth-logo-row">
+    <div class="auth-logo-box">LF</div>
+    <div class="auth-brand"><span>Lead</span>Flow</div>
+    <div class="auth-tagline-badge">Work Different.</div>
+  </div>
+  <div class="auth-sub" style="margin-bottom:22px">Commercial Insurance AI Agent · <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="385548575e4d5578574d4c165b57164259">[email&#160;protected]</a></div>
+  <div class="auth-tabs">
+    <div class="auth-tab on" onclick="authTab('signin')">Sign In</div>
+    <div class="auth-tab" onclick="authTab('signup')">Register</div>
+    <div class="auth-tab" onclick="authTab('reset')">Reset</div>
+  </div>
+  <div class="auth-err" id="authErr"></div>
+  <div class="auth-ok" id="authOk"></div>
+  <div id="tabSignin">
+    <div class="fg"><label class="fl">Email</label><input class="fi" type="email" id="siEmail" placeholder="your@email.com"></div>
+    <div class="fg"><label class="fl">Password</label><input class="fi" type="password" id="siPass" placeholder="Password" onkeydown="if(event.key==='Enter')doSignIn()"></div>
+    <button class="btn btn-p btn-full" onclick="doSignIn()" id="signinBtn">Sign In →</button>
+  </div>
+  <div id="tabSignup" style="display:none">
+    <div class="fg"><label class="fl">Full Name</label><input class="fi" id="suName" placeholder="Your full name"></div>
+    <div class="fg"><label class="fl">Email</label><input class="fi" type="email" id="suEmail" placeholder="your@email.com"></div>
+    <div class="fg"><label class="fl">Password</label><input class="fi" type="password" id="suPass" placeholder="Min 6 characters"></div>
+    <div class="fg"><label class="fl">Branch / Area</label><input class="fi" id="suBranch" placeholder="e.g. Sandton"></div>
+    <button class="btn btn-p btn-full" onclick="doSignUp()">Create Account →</button>
+  </div>
+  <div id="tabReset" style="display:none">
+    <div class="fg"><label class="fl">Email</label><input class="fi" type="email" id="rstEmail" placeholder="your@email.com"></div>
+    <button class="btn btn-p btn-full" onclick="doReset()">Send Reset Link</button>
+    <p style="text-align:center;margin-top:12px;font-size:13px"><a href="#" onclick="authTab('signin')">← Back</a></p>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════ APP ═══════════ -->
+<div id="appWrap">
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-inner">
+        <div class="sb-logo-box">LF</div>
+        <div>
+          <div class="sb-brand"><span>Lead</span>Flow</div>
+          <div class="sb-tagline">Work Different.</div>
+        </div>
+      </div>
+    </div>
+    <div class="sb-sec">Command</div>
+    <button class="sb-item on" id="nav-home" onclick="goto('home')">
+      <span class="ico-wrap"></span>Command Centre
+    </button>
+    <button class="sb-item" id="nav-agent" onclick="goto('agent')">
+      <span class="ico-wrap"></span>AI Agent
+      <span class="sb-badge orange" id="agentBadge" style="display:none">0</span>
+    </button>
+    <button class="sb-item" id="nav-pipeline" onclick="goto('pipeline')">
+      <span class="ico-wrap"></span>Pipeline
+      <span class="sb-badge blue" id="pipeBadge">0</span>
+    </button>
+    <button class="sb-item" id="nav-followups" onclick="goto('followups')">
+      <span class="ico-wrap"></span>Follow-ups
+      <span class="sb-badge red" id="fuBadge" style="display:none">0</span>
+    </button>
+    <div class="sb-div"></div>
+    <div class="sb-sec">Tools</div>
+    <button class="sb-item" id="nav-import" onclick="goto('import')">
+      <span class="ico-wrap"></span>Import Leads
+      <span class="sb-badge green">Free</span>
+    </button>
+    <button class="sb-item" id="nav-email" onclick="goto('email')">
+      <span class="ico-wrap"></span>Email Generator
+    </button>
+    <button class="sb-item" id="nav-search" onclick="goto('search')">
+      <span class="ico-wrap"></span>AI Search
+    </button>
+    <button class="sb-item" id="nav-script" onclick="goto('script')">
+      <span class="ico-wrap"></span>Call Script
+    </button>
+    <button class="sb-item" id="nav-stats" onclick="goto('stats')">
+      <span class="ico-wrap"></span>Stats
+    </button>
+    <div class="sb-div"></div>
+    <div class="sb-sec">Account</div>
+    <button class="sb-item" id="nav-profile" onclick="goto('profile')">
+      <span class="ico-wrap"></span>Profile
+    </button>
+    <button class="sb-item" onclick="doSignOut()">
+      <span class="ico-wrap"></span>Sign Out
+    </button>
+    <div class="sb-user">
+      <div class="sb-user-card">
+        <div class="sb-av" id="userAv">M</div>
+        <div><div class="sb-un" id="userNm">Broker</div><div class="sb-ur"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="eb869b848d9e86ab849e9fc58884c5918a">[email&#160;protected]</a></div></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-wrap">
+    <header class="topnav">
+      <div class="tn-title" id="tnTitle">Command Centre<span class="tn-sub" id="tnSub">Welcome back</span></div>
+      <div class="tn-right">
+        <div class="live-pill"><div class="live-dot"></div>AGENT ACTIVE</div>
+        <div class="clock" id="clockEl">00:00:00</div>
+      </div>
+    </header>
+
+    <!-- ═══ HOME / COMMAND CENTRE ═══ -->
+    <div class="page on" id="page-home">
+      <div class="crumb">LeadFlow / <span>Command Centre</span></div>
+
+      <!-- AGENT BANNER -->
+      <div class="agent-banner">
+        <div class="ab-left">
+          <div class="ab-title">Agent Status — Executor Running</div>
+          <div class="ab-sub">Finds leads. Writes proposals. Books meetings.<br>You only step in to <strong style="color:#fff">close.</strong></div>
+          <div class="ab-status"><div class="ab-dot"></div><div class="ab-label">Autonomous · All systems operational</div></div>
+        </div>
+        <div class="ab-right">
+          <div class="agent-cycle"><div class="ac-num" id="ac-mined">0</div><div class="ac-lbl">Mined</div></div>
+          <div class="agent-cycle"><div class="ac-num" id="ac-sent">0</div><div class="ac-lbl">Sent</div></div>
+          <div class="agent-cycle"><div class="ac-num" id="ac-mtg">0</div><div class="ac-lbl">Meetings</div></div>
+        </div>
+      </div>
+
+      <!-- METRICS (image ref style) -->
+      <div class="metrics-row">
+        <div class="metric-card" onclick="ripple(this);goto('pipeline')">
+          <div class="metric-body">
+            <div class="num" id="m-leads">0</div>
+            <div class="lbl">Leads Mined</div>
+            <div class="delta delta-up" id="m-leads-d">↑ Pipeline total</div>
+          </div>
+        </div>
+        <div class="metric-card" onclick="ripple(this);goto('email')">
+          <div class="metric-body">
+            <div class="num" id="m-emails">0</div>
+            <div class="lbl">Emails Sent</div>
+            <div class="delta delta-up">↑ This session</div>
+          </div>
+        </div>
+        <div class="metric-card" onclick="ripple(this)">
+          <div class="metric-body">
+            <div class="num" id="m-mtg">0</div>
+            <div class="lbl">Meetings Booked</div>
+            <div class="delta delta-up">↑ Auto-scheduled</div>
+          </div>
+        </div>
+        <div class="metric-card" onclick="ripple(this)">
+          <div class="metric-body">
+            <div class="num" id="m-pipe">R0</div>
+            <div class="lbl">Revenue Pipeline</div>
+            <div class="delta" id="m-pipe-d" style="color:var(--sub)">Est. annual premiums</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 300px;gap:18px">
+        <div class="card">
+          <div class="card-hd">Pipeline Breakdown</div>
+          <div class="card-sd">Lead status distribution</div>
+          <div id="homeBreakdown"></div>
+        </div>
+        <div class="card">
+          <div class="card-hd">Recent Activity</div>
+          <div id="actFeed" style="margin-top:6px"></div>
+        </div>
+      </div>
+
+      <div style="margin-top:18px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+        <div class="card" style="cursor:pointer;transition:all .2s" onclick="ripple(this);goto('import')" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='var(--sh-md)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+          <div style="width:44px;height:44px;border-radius:12px;background:var(--green);display:flex;align-items:center;justify-content:center;margin-bottom:10px;box-shadow:0 4px 12px rgba(16,185,129,.3)">
+          </div>
+          <div style="font-size:14px;font-weight:700">Import Leads</div>
+          <div style="font-size:12px;color:var(--sub);margin-top:3px">CSV, manual, or free directories</div>
+        </div>
+        <div class="card" style="cursor:pointer;transition:all .2s" onclick="ripple(this);goto('email')" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='var(--sh-md)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+          <div style="width:44px;height:44px;border-radius:12px;background:var(--orange);display:flex;align-items:center;justify-content:center;margin-bottom:10px;box-shadow:0 4px 12px rgba(245,158,11,.3)">
+          </div>
+          <div style="font-size:14px;font-weight:700">Draft Email</div>
+          <div style="font-size:12px;color:var(--sub);margin-top:3px">AI-written cold outreach</div>
+        </div>
+        <div class="card" style="cursor:pointer;transition:all .2s" onclick="ripple(this);goto('followups')" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='var(--sh-md)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+          <div style="width:44px;height:44px;border-radius:12px;background:var(--red);display:flex;align-items:center;justify-content:center;margin-bottom:10px;box-shadow:0 4px 12px rgba(239,68,68,.3)">
+          </div>
+          <div style="font-size:14px;font-weight:700">Follow-ups</div>
+          <div style="font-size:12px;color:var(--sub);margin-top:3px" id="qs-fu-lbl">Leads due for contact</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ AI AGENT ═══ -->
+    <div class="page" id="page-agent">
+      <div class="crumb">LeadFlow / <span>AI Agent</span></div>
+      <div class="pg-head">
+        <div><div class="pg-title">AI Agent — The Executor</div><div class="pg-sub">The agent does the grind. You only close.</div></div>
+        <button class="btn btn-dark btn-sm" onclick="ripple(this);runBrief()"> Run Analysis
+        </button>
+      </div>
+
+      <!-- Workflow visual -->
+      <div class="workflow-steps">
+        <div class="ws active"><div class="ws-lbl" style="margin-top:0">Prospecting</div><div class="ws-status">Find prospects</div></div>
+        <div class="ws"><div class="ws-lbl" style="margin-top:0">Enrich</div><div class="ws-status">Research each</div></div>
+        <div class="ws"><div class="ws-lbl" style="margin-top:0">Outreach</div><div class="ws-status">Send proposal</div></div>
+        <div class="ws"><div class="ws-lbl" style="margin-top:0">Nurture</div><div class="ws-status">Follow-ups</div></div>
+        <div class="ws"><div class="ws-lbl" style="margin-top:0">Warm</div><div class="ws-status">Detect interest</div></div>
+        <div class="ws"><div class="ws-lbl" style="margin-top:0">Book</div><div class="ws-status">Send Calendly</div></div>
+        <div class="ws"><div class="ws-lbl" style="margin-top:0;font-weight:800;color:var(--blue)">YOU Close</div><div class="ws-status">Only step in here</div></div>
+      </div>
+
+      <div class="aut-grid">
+        <div class="aut-btn on" id="aut-supervised" onclick="setAut('supervised')">Supervised<span>Approve everything</span></div>
+        <div class="aut-btn" id="aut-semi" onclick="setAut('semi')">Semi-Auto<span>Auto score + draft</span></div>
+        <div class="aut-btn" id="aut-full" onclick="setAut('full')">Full Auto<span>Agent runs solo</span></div>
+      </div>
+
+      <div class="mod-grid">
+        <div class="mod-card" onclick="ripple(this)"><div class="mod-ico"></div><div class="mod-n">Discovery</div><div class="ms-g" id="mod-d">Ready</div></div>
+        <div class="mod-card" onclick="ripple(this)"><div class="mod-ico"></div><div class="mod-n">Verification</div><div class="ms-g" id="mod-v">Ready</div></div>
+        <div class="mod-card" onclick="ripple(this)"><div class="mod-ico"></div><div class="mod-n">Scoring</div><div class="ms-g" id="mod-s">Active</div></div>
+        <div class="mod-card" onclick="ripple(this)"><div class="mod-ico"></div><div class="mod-n">Outreach</div><div class="ms-a" id="mod-o">Approval</div></div>
+        <div class="mod-card" onclick="ripple(this)"><div class="mod-ico"></div><div class="mod-n">Nurture</div><div class="ms-g" id="mod-nu">Standby</div></div>
+        <div class="mod-card" onclick="ripple(this)"><div class="mod-ico"></div><div class="mod-n">Booking</div><div class="ms-g" id="mod-bk">Ready</div></div>
+      </div>
+
+      <!-- Settings -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-hd" style="margin-bottom:4px">Anthropic API Key</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Powers AI search, email generation, reply classification. Get at console.anthropic.com</div>
+        <div style="display:flex;gap:8px">
+          <input type="password" class="fi" id="apiKeyInput" placeholder="sk-ant-api03-..." style="flex:1" oninput="saveKey()">
+          <button class="btn btn-s btn-sm" onclick="toggleKey()"></button>
+        </div>
+        <div id="apiKeyStatus" style="font-size:12px;margin-top:6px;color:var(--muted)"></div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-hd" style="margin-bottom:12px">Calendly / Booking Link</div>
+        <div class="fi-wrap" style="margin-bottom:10px">
+          <input class="fi" id="calendlyLink" placeholder="https://calendly.com/mpofum/30min" oninput="saveCalendly()">
+        </div>
+        <div style="font-size:12px;color:var(--muted)">When a lead shows interest, the agent sends this link automatically.</div>
+        <div id="calendlyStatus" style="font-size:12px;margin-top:6px;color:var(--muted)"></div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-hd" style="margin-bottom:12px">Agent Settings</div>
+        <div class="tog-row"><div><div class="tog-t">Auto-Score Leads</div><div class="tog-d">1-5 when added</div></div><label class="toggle"><input type="checkbox" id="ag_score" checked onchange="saveAgt()"><div class="tog-tk"></div></label></div>
+        <div class="tog-row"><div><div class="tog-t">Auto Follow-up Date</div><div class="tog-d">Hot=1d · Warm=2d · Cold=3d</div></div><label class="toggle"><input type="checkbox" id="ag_fu" checked onchange="saveAgt()"><div class="tog-tk"></div></label></div>
+        <div class="tog-row"><div><div class="tog-t">Draft Outreach on Add</div><div class="tog-d">AI email per lead — your approval</div></div><label class="toggle"><input type="checkbox" id="ag_draft" checked onchange="saveAgt()"><div class="tog-tk"></div></label></div>
+        <div class="tog-row"><div><div class="tog-t">Auto-send Booking Link</div><div class="tog-d">When lead shows interest</div></div><label class="toggle"><input type="checkbox" id="ag_book" checked onchange="saveAgt()"><div class="tog-tk"></div></label></div>
+        <div class="tog-row"><div><div class="tog-t">Daily Brief on Login</div><div class="tog-d">Pipeline analysis at boot</div></div><label class="toggle"><input type="checkbox" id="ag_brief" checked onchange="saveAgt()"><div class="tog-tk"></div></label></div>
+      </div>
+
+      <div class="card" id="apprCard" style="display:none;margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div class="card-hd" style="margin:0">Approval Queue</div>
+          <span id="apprBadge" style="background:var(--red);color:#fff;font-size:11px;font-weight:700;padding:2px 9px;border-radius:10px"></span>
+        </div>
+        <div id="apprList"></div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div class="card-hd" style="margin:0">Agent Log</div>
+          <button class="btn btn-s btn-xs" onclick="clearLog()">Clear</button>
+        </div>
+        <div class="alog" id="agentLog"><div class="ll li">— Agent ready —</div></div>
+      </div>
+    </div>
+
+    <!-- ═══ PIPELINE ═══ -->
+    <div class="page" id="page-pipeline">
+      <div class="crumb">LeadFlow / <span>Pipeline</span></div>
+      <div class="pg-head">
+        <div><div class="pg-title">Pipeline</div><div class="pg-sub">All leads managed by the agent</div></div>
+        <div style="display:flex;gap:8px">
+          <select class="fsel" id="pipeFilter" onchange="renderPipe()" style="width:auto;font-size:13px">
+            <option value="">All Status</option><option>Hot</option><option>Warm</option><option>Cold</option>
+            <option>Contacted</option><option>Won</option><option>Lost</option><option>DNC</option>
+          </select>
+          <button class="btn btn-p btn-sm" onclick="ripple(this);goto('import')"> Add Lead
+          </button>
+        </div>
+      </div>
+      <div class="pipe-grid" id="pipeGrid"></div>
+    </div>
+
+    <!-- ═══ FOLLOW-UPS ═══ -->
+    <div class="page" id="page-followups">
+      <div class="crumb">LeadFlow / <span>Follow-ups</span></div>
+      <div class="pg-head"><div><div class="pg-title">Follow-ups</div><div class="pg-sub">Leads due for contact</div></div></div>
+      <div id="fuList"></div>
+    </div>
+
+    <!-- ═══ IMPORT ═══ -->
+    <div class="page" id="page-import">
+      <div class="crumb">LeadFlow / <span>Import Leads</span></div>
+      <div class="pg-head"><div><div class="pg-title">Import Leads — Free</div><div class="pg-sub">No API key needed. CSV, manual, or free SA directories.</div></div></div>
+
+      <div class="card" style="margin-bottom:18px">
+        <div class="card-hd">Upload CSV</div>
+        <div class="card-sd">Required: Company Name. Optional: Phone, Industry, Address, Contact, Email</div>
+        <div class="drop-zone" id="dropZone" onclick="document.getElementById('csvFile').click()" ondrop="onDrop(event)" ondragover="onDOver(event)" ondragleave="onDLeave(event)">
+          <input type="file" id="csvFile" accept=".csv,.txt" onchange="onFileSelect(event)">
+          <div style="font-size:36px;margin-bottom:10px">📂</div>
+          <div style="font-size:14px;font-weight:700;margin-bottom:4px">Drop CSV here or click to browse</div>
+          <div style="font-size:12px;color:var(--sub)">.csv or .txt · Any size</div>
+        </div>
+        <div style="margin-top:14px">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--sub);margin-bottom:6px">Or paste CSV directly:</div>
+          <textarea class="fi" id="csvPaste" rows="4" placeholder="Company Name,Phone,Industry,City,Contact&#10;Acme Builders,011 555 1234,Construction,Sandton,John Smith"></textarea>
+          <button class="btn btn-p btn-sm" style="margin-top:8px" onclick="ripple(this);parsePaste()">Preview Import</button>
+        </div>
+        <div id="importPrev" style="margin-top:14px"></div>
+      </div>
+
+      <div class="card" style="margin-bottom:18px">
+        <div class="card-hd">Quick Manual Add</div>
+        <div class="card-sd">Add a single business directly to pipeline</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+          <div class="fg" style="margin:0"><label class="fl">Company *</label><input class="fi" id="mCo" placeholder="Acme Construction"></div>
+          <div class="fg" style="margin:0"><label class="fl">Phone</label><input class="fi" id="mPh" placeholder="011 555 1234"></div>
+          <div class="fg" style="margin:0"><label class="fl">Industry</label><input class="fi" id="mInd" placeholder="Construction"></div>
+          <div class="fg" style="margin:0"><label class="fl">Contact Person</label><input class="fi" id="mCt" placeholder="Owner name"></div>
+          <div class="fg" style="margin:0"><label class="fl">City / Address</label><input class="fi" id="mAddr" placeholder="Sandton, Gauteng"></div>
+          <div class="fg" style="margin:0"><label class="fl">Website</label><input class="fi" id="mWeb" placeholder="www.example.co.za"></div>
+        </div>
+        <button class="btn btn-g" style="margin-top:14px" onclick="ripple(this);addManual()"> Add to Pipeline
+        </button>
+      </div>
+
+      <div class="card">
+        <div class="card-hd">Free SA Business Directories</div>
+        <div class="card-sd">All the leads you need are free. Search these, copy details, paste above.</div>
+        <div class="dir-grid">
+          <div class="dir-card" onclick="window.open('https://www.yellowpages.co.za','_blank')"><div class="dir-ico" style="background:#FFF9C4"></div><div><div style="font-size:13px;font-weight:700">Yellow Pages SA</div><div style="font-size:12px;color:var(--sub)">yellowpages.co.za — unlimited free</div></div></div>
+          <div class="dir-card" onclick="window.open('https://maps.google.com','_blank')"><div class="dir-ico" style="background:#E3F2FD"></div><div><div style="font-size:13px;font-weight:700">Google Maps</div><div style="font-size:12px;color:var(--sub)">Search "[industry] near [city]"</div></div></div>
+          <div class="dir-card" onclick="window.open('https://www.linkedin.com/search/results/companies/','_blank')"><div class="dir-ico" style="background:#E8F4FD"></div><div><div style="font-size:13px;font-weight:700">LinkedIn</div><div style="font-size:12px;color:var(--sub)">Company search + directors</div></div></div>
+          <div class="dir-card" onclick="window.open('https://www.brabys.com','_blank')"><div class="dir-ico" style="background:#E8F5E9"></div><div><div style="font-size:13px;font-weight:700">Brabys SA</div><div style="font-size:12px;color:var(--sub)">Full SA business directory</div></div></div>
+          <div class="dir-card" onclick="window.open('https://www.cylex-sa.co.za','_blank')"><div class="dir-ico" style="background:#F3E5F5"></div><div><div style="font-size:13px;font-weight:700">Cylex SA</div><div style="font-size:12px;color:var(--sub)">Listings with emails + numbers</div></div></div>
+          <div class="dir-card" onclick="window.open('https://www.etenders.gov.za','_blank')"><div class="dir-ico" style="background:#E8F5E9"></div><div><div style="font-size:13px;font-weight:700">eTenders</div><div style="font-size:12px;color:var(--sub)">Tender winners need cover NOW</div></div></div>
+          <div class="dir-card" onclick="window.open('https://www.cipc.co.za','_blank')"><div class="dir-ico" style="background:#EDE7F6"></div><div><div style="font-size:13px;font-weight:700">CIPC Register</div><div style="font-size:12px;color:var(--sub)">Official SA company register</div></div></div>
+          <div class="dir-card" onclick="window.open('https://www.sabusinessdirectory.co.za','_blank')"><div class="dir-ico" style="background:#FCE4EC"></div><div><div style="font-size:13px;font-weight:700">SA Business Dir.</div><div style="font-size:12px;color:var(--sub)">National listings by category</div></div></div>
+          <div class="dir-card" onclick="window.open('https://www.treasury.gov.za','_blank')"><div class="dir-ico" style="background:#FFF8E1"></div><div><div style="font-size:13px;font-weight:700">National Treasury</div><div style="font-size:12px;color:var(--sub)">Tender awards — high intent</div></div></div>
+        </div>
+        <div style="background:var(--blue-s);border:1px solid #C7D2FE;border-radius:var(--r);padding:16px 18px;margin-top:4px">
+          <div style="font-size:13px;font-weight:700;color:var(--blue);margin-bottom:8px">50+ free leads in 30 minutes</div>
+          <ol style="font-size:13px;color:var(--sub);line-height:2.1;padding-left:18px">
+            <li>Google Maps → <em>"construction companies Johannesburg"</em> → copy name + phone</li>
+            <li>Paste into Quick Manual Add above → Add to Pipeline</li>
+            <li>Open eTenders → find this month's tender winners (highest intent leads)</li>
+            <li>Repeat across Yellow Pages for your target industries</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ EMAIL ═══ -->
+    <div class="page" id="page-email">
+      <div class="crumb">LeadFlow / <span>Email Generator</span></div>
+      <div class="pg-head"><div><div class="pg-title">Email Generator</div><div class="pg-sub">AI-crafted proposals — or instant template. Works without API key.</div></div></div>
+      <div class="email-2col">
+        <div class="card">
+          <div class="fg"><label class="fl">Company Name</label><input class="fi" id="eCo" placeholder="e.g. Acme Construction"></div>
+          <div class="fg"><label class="fl">Contact Person</label><input class="fi" id="eCt" placeholder="e.g. John Smith"></div>
+          <div class="fg"><label class="fl">Industry</label><input class="fi" id="eInd" placeholder="e.g. Construction"></div>
+          <div class="fg"><label class="fl">City</label><input class="fi" id="eCity" placeholder="e.g. Johannesburg"></div>
+          <div class="fg"><label class="fl">Known Pain / Risk</label><input class="fi" id="ePain" placeholder="e.g. fleet of 12 vehicles, uninsured drivers"></div>
+          <button class="btn btn-dark btn-full" id="eBtn" onclick="ripple(this);genEmail()"> Generate Email
+          </button>
+          <div style="font-size:12px;color:var(--muted);margin-top:8px;text-align:center">Sender: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="620f120d04170f220d17164c010d4c1803">[email&#160;protected]</a></div>
+        </div>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div class="card-hd" style="margin:0">Generated Email</div>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-s btn-xs" onclick="ripple(this);copyEmail()"> Copy</button>
+              <button class="btn btn-ghost btn-xs" onclick="ripple(this);openOutlook()"> Outlook</button>
+            </div>
+          </div>
+          <textarea class="email-area" id="eOut" placeholder="Click Generate — your AI proposal will appear here.&#10;&#10;Even without an API key, a highly-personalised template is generated instantly."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ AI SEARCH ═══ -->
+    <div class="page" id="page-search">
+      <div class="crumb">LeadFlow / <span>AI Search</span></div>
+      <div class="pg-head"><div><div class="pg-title">AI Lead Search</div><div class="pg-sub">Requires Anthropic API key · ~R0.02 per search</div></div></div>
+      <div class="card" style="margin-bottom:16px">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end">
+          <div><label class="fl">Industry</label>
+            <select class="fsel" id="srchInd">
+              <option>Construction</option><option>Transport &amp; Logistics</option><option>Retail</option>
+              <option>Manufacturing</option><option>Hospitality &amp; Restaurants</option><option>Healthcare &amp; Medical</option>
+              <option>Technology &amp; IT</option><option>Legal Services</option><option>Accounting &amp; Auditing</option>
+              <option>Real Estate &amp; Property</option><option>Financial Services</option><option>Automotive &amp; Car Dealerships</option>
+              <option>Engineering</option><option>Mining</option><option>Agriculture &amp; Farming</option>
+              <option>Security Services</option><option>Cleaning Services</option><option>Events Management</option>
+              <option>Solar &amp; Renewable Energy</option><option>Courier &amp; Delivery</option><option>Game Farms &amp; Lodges</option>
+            </select>
+          </div>
+          <div><label class="fl">Province</label>
+            <select class="fsel" id="srchProv" onchange="updCities()">
+              <option>Gauteng</option><option>Western Cape</option><option>KwaZulu-Natal</option>
+              <option>Eastern Cape</option><option>Limpopo</option><option>Mpumalanga</option>
+              <option>North West</option><option>Free State</option><option>Northern Cape</option>
+            </select>
+          </div>
+          <div><label class="fl">City</label><select class="fsel" id="srchCity"></select></div>
+          <button class="btn btn-p" id="srchBtn" onclick="ripple(this);doSearch()"> Search
+          </button>
+        </div>
+      </div>
+      <div id="srchRes">
+        <div class="empty"><div class="empty-ico"></div><div style="font-weight:600">Select filters and search</div><div style="font-size:12px;margin-top:6px">Or use <a href="#" onclick="goto('import')">free import</a></div></div>
+      </div>
+    </div>
+
+    <!-- ═══ CALL SCRIPT ═══ -->
+    <div class="page" id="page-script">
+      <div class="crumb">LeadFlow / <span>Call Script</span></div>
+      <div class="pg-head"><div><div class="pg-title">7-Step Call Script</div><div class="pg-sub">Commercial Insurance Call Script — Outsurance commercial</div></div></div>
+      <div class="step-card"><div class="step-n">01</div><div><div class="step-t">Opening</div><div class="step-b">"Good [morning/afternoon], may I speak with the owner or the person who handles your business insurance? My name is [Name] from Outsurance."</div></div></div>
+      <div class="step-card"><div class="step-n">02</div><div><div class="step-t">The Hook</div><div class="step-b">"I'm reaching out to [Company] specifically because we work with [Industry] businesses in [City] and we've been helping them save 15–35% on premiums while improving their cover."</div></div></div>
+      <div class="step-card"><div class="step-n">03</div><div><div class="step-t">Pain Question</div><div class="step-b">"When last did someone sit down and properly review your business insurance? Most owners we speak to haven't had a review in 2+ years — and they're overpaying."</div></div></div>
+      <div class="step-card"><div class="step-n">04</div><div><div class="step-t">Handle "We're happy"</div><div class="step-b">"That's great — I'm not asking you to change anything today. Just a FREE 15-minute comparison. Worst case: you confirm you've got a great deal. Best case: we save you thousands."</div></div></div>
+      <div class="step-card"><div class="step-n">05</div><div><div class="step-t">The Close</div><div class="step-b">"I can have a no-obligation quote within 24 hours. All I need is your annual premium figure. Would [day] morning or afternoon work for a quick 15-minute call?"</div></div></div>
+      <div class="step-card"><div class="step-n">06</div><div><div class="step-t">Objection: "Send info first"</div><div class="step-b">"Absolutely — what's the best email? To make it relevant, what's your approximate annual insurance spend? Even a rough figure helps me personalise it for [Company]."</div></div></div>
+      <div class="step-card"><div class="step-n">07</div><div><div class="step-t">The Wrap</div><div class="step-b">"Perfect. I'll get that to you by [time]. Just to confirm — [Company], [Industry], in [City]. Anything specific about your cover — vehicles, premises, liability, professional indemnity?"</div></div></div>
+    </div>
+
+    <!-- ═══ STATS ═══ -->
+    <div class="page" id="page-stats">
+      <div class="crumb">LeadFlow / <span>Stats</span></div>
+      <div class="pg-head"><div><div class="pg-title">My Stats</div></div></div>
+      <div class="metrics-row">
+        <div class="metric-card"><div class="metric-body"><div class="num" id="st-leads">0</div><div class="lbl">Total Leads</div></div></div>
+        <div class="metric-card"><div class="metric-body"><div class="num" id="st-emails">0</div><div class="lbl">Emails</div></div></div>
+        <div class="metric-card"><div class="metric-body"><div class="num" id="st-calls">0</div><div class="lbl">Calls</div></div></div>
+        <div class="metric-card"><div class="metric-body"><div class="num" id="st-won">0</div><div class="lbl">Won</div></div></div>
+      </div>
+      <div class="card"><div class="card-hd">Pipeline Breakdown</div><div id="statsBrk" style="margin-top:10px"></div></div>
+    </div>
+
+    <!-- ═══ PROFILE ═══ -->
+    <div class="page" id="page-profile">
+      <div class="crumb">LeadFlow / <span>Profile</span></div>
+      <div class="pg-head"><div><div class="pg-title">Broker Profile</div><div class="pg-sub">Your details are injected automatically into every email, call script and proposal</div></div></div>
+      <div class="prof-grid">
+        <div class="card">
+          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--sub);margin-bottom:14px">Personal Details</div>
+          <div class="fg"><label class="fl">Full Name</label><input class="fi" id="profName" placeholder="Mpofuma"></div>
+          <div class="fg"><label class="fl">Phone Number</label><input class="fi" id="profPhone" placeholder="082 555 1234"></div>
+          <div class="fg"><label class="fl">Work Email</label><input class="fi" id="profEmail" placeholder="mpofum@out.co.za"></div>
+          <div class="fg"><label class="fl">Province / Service Area</label><input class="fi" id="profBranch" placeholder="e.g. Gauteng — Sandton, Midrand, Pretoria"></div>
+          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--sub);margin:20px 0 14px">Brokerage Details</div>
+          <div class="fg"><label class="fl">Brokerage / Company Name</label><input class="fi" id="profCompany" placeholder="OUTsurance"></div>
+          <div class="fg"><label class="fl">FSP / Licence Number</label><input class="fi" id="profFsp" placeholder="FSP 12345"></div>
+          <div class="fg"><label class="fl">Insurance Focus Areas</label><input class="fi" id="profFocus" placeholder="e.g. Fleet, Liability, Goods-in-Transit, Engineering Works"></div>
+          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--sub);margin:20px 0 14px">Automation</div>
+          <div class="fg"><label class="fl">Calendly / Booking Link</label><input class="fi" id="profCal" placeholder="https://calendly.com/mpofum/30min"></div>
+          <div class="fg"><label class="fl">Email Signature</label><textarea class="fi" id="profSig" rows="4" placeholder="Mpofuma&#10;Commercial Insurance Specialist&#10;OUTsurance | FSP 12345&#10;mpofum@out.co.za | 082 555 1234"></textarea></div>
+          <div class="fg"><label class="fl">n8n Webhook URL</label><input class="fi" id="profN8n" placeholder="https://leadflow7.app.n8n.cloud/webhook/leadflow-mine"></div>
+          <div class="fg"><label class="fl">Brevo API Key</label><input class="fi" id="profBrevo" placeholder="xsmtpsib-..."></div>
+          <button class="btn btn-p" style="margin-top:8px" onclick="ripple(this);saveProfile()">Save Profile</button>
+        </div>
+        <div>
+          <div class="card" style="margin-bottom:16px">
+            <div style="font-size:13px;font-weight:700;margin-bottom:14px">System Status</div>
+            <div class="svc-row"><span class="svc-dot" id="svcDbDot"></span><span class="svc-name">Database</span><span class="svc-val" id="svcDbVal">Checking...</span></div>
+            <div class="svc-row"><span class="svc-dot" id="svcEmailDot"></span><span class="svc-name">Email Engine (Brevo)</span><span class="svc-val" id="svcEmailVal">Not configured</span></div>
+            <div class="svc-row"><span class="svc-dot" id="svcAgentDot"></span><span class="svc-name">n8n Agent</span><span class="svc-val" id="svcAgentVal">Not configured</span></div>
+            <div class="svc-row"><span class="svc-dot svc-ok"></span><span class="svc-name">AI Engine (Groq)</span><span class="svc-val" style="color:var(--green)">Free — Active</span></div>
+            <div style="font-size:11px;color:var(--sub);margin-top:14px;padding-top:10px;border-top:1px solid var(--border)">Last successful run: <span id="svcLastRun">Never</span></div>
+          </div>
+          <div class="card" id="n8nStatusBox">
+            <div style="font-size:13px;font-weight:700;margin-bottom:12px">Deployment</div>
+            <a href="https://leadflow-lovat.vercel.app" target="_blank" class="btn btn-dark btn-full" style="margin-bottom:8px;text-decoration:none;display:block;text-align:center">Live Site (Vercel)</a>
+            <a href="https://github.com/MikeM26/leadflow" target="_blank" class="btn btn-ghost btn-full" style="margin-bottom:8px;text-decoration:none;display:block;text-align:center">GitHub Repo</a>
+            <a href="https://supabase.com/dashboard/project/mtnqgnrcukombrklezhe" target="_blank" class="btn btn-ghost btn-full" style="text-decoration:none;display:block;text-align:center">Supabase</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- LEAD MODAL -->
+<div class="modal-bg" id="leadModal">
+<div class="modal">
+  <div class="modal-h"><div class="modal-t" id="ldT">Lead</div><button class="modal-x" onclick="closeM('leadModal')">✕</button></div>
+  <div class="modal-b">
+    <div style="font-size:12px;color:var(--sub);margin-bottom:14px" id="ldSub"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="fg"><label class="fl">Status</label><select class="fsel" id="ldSt"><option>Hot</option><option>Warm</option><option>Cold</option><option>Contacted</option><option>Won</option><option>Lost</option><option>DNC</option></select></div>
+      <div class="fg"><label class="fl">Follow-up Date</label><input type="date" class="fi" id="ldFU"></div>
+    </div>
+    <div class="fg"><label class="fl">Notes</label><textarea class="fi" id="ldNo" rows="3"></textarea></div>
+  </div>
+  <div class="modal-f">
+    <button class="btn btn-r btn-sm" onclick="delLead()">Delete</button>
+    <button class="btn btn-s" onclick="closeM('leadModal')">Cancel</button>
+    <button class="btn btn-p" onclick="saveLead()">Save Changes</button>
+  </div>
+</div>
+</div>
+
+<!-- APPROVAL MODAL -->
+<div class="modal-bg" id="apprModal">
+<div class="modal">
+  <div class="modal-h"><div class="modal-t" id="apT">Review</div><button class="modal-x" onclick="closeM('apprModal')">✕</button></div>
+  <div class="modal-b">
+    <div style="font-size:12px;color:var(--sub);margin-bottom:10px" id="apSub"></div>
+    <div class="modal-pre" id="apBody"></div>
+  </div>
+  <div class="modal-f">
+    <button class="btn btn-s" onclick="rejAppr()">Skip</button>
+    <button class="btn btn-p" onclick="appAppr()">✅ Approve & Execute</button>
+  </div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+/* ══ CONFIG ══════════════════════════════════════ */
+const SB='https://mtnqgnrcukombrklezhe.supabase.co';
+const SK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10bnFnbnJjdWtvbWJya2xlemhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NzY1NzQsImV4cCI6MjA4NzQ1MjU3NH0.Y_RBIjB1N_SEwNaLVg85R5wIRkXY199AiGRdqCzGhz8';
+const CITIES={'Gauteng':['Johannesburg','Sandton','Randburg','Roodepoort','Soweto','Midrand','Centurion','Pretoria','Benoni','Boksburg','Germiston','Kempton Park','Alberton','Edenvale','Fourways','Bryanston','Krugersdorp'],'Western Cape':['Cape Town','Bellville','Stellenbosch','Paarl','George','Knysna','Worcester','Somerset West','Claremont','Mitchells Plain'],'KwaZulu-Natal':['Durban','Pietermaritzburg','Richards Bay','Newcastle','Pinetown','Umhlanga','Amanzimtoti','Ballito'],'Eastern Cape':['Port Elizabeth','East London','Uitenhage','Mthatha','Grahamstown'],'Limpopo':['Polokwane','Tzaneen','Phalaborwa','Mokopane','Lephalale','Bela-Bela'],'Mpumalanga':['Nelspruit','Witbank','Middelburg','Secunda','Standerton'],'North West':['Rustenburg','Mahikeng','Klerksdorp','Potchefstroom','Brits'],'Free State':['Bloemfontein','Welkom','Bethlehem','Sasolburg','Kroonstad'],'Northern Cape':['Kimberley','Upington','Springbok','De Aar']};
+
+/* ══ STATE ══════════════════════════════════════ */
+let user=null,leads=[],profile={},stats={emails:0,calls:0,deals:0,meetings:0};
+let agtCfg={score:true,fu:true,draft:true,book:true,brief:true};
+let apprs=[],apprIdx=null,curLid=null,autLvl='supervised',actLog=[],addedIds=new Set();
+
+/* ══ SUPABASE ══════════════════════════════════ */
+async function db(p,o={}){
+  const prefer=o.method==='POST'?'return=representation,resolution=ignore-duplicates':'return=representation';
+  const h={'apikey':SK,'Authorization':'Bearer '+(user?.token||SK),'Content-Type':'application/json','Prefer':prefer,...(o.headers||{})};
+  const r=await fetch(SB+'/rest/v1/'+p,{...o,headers:h});
+  if(!r.ok){const t=await r.text();throw new Error(t||'DB '+r.status);}
+  const t=await r.text();return t?JSON.parse(t):[];
+}
+
+/* ══ AUTH ══════════════════════════════════════ */
+function authTab(t){['signin','signup','reset'].forEach((x,i)=>{document.getElementById('tab'+x.charAt(0).toUpperCase()+x.slice(1)).style.display=x===t?'block':'none';document.querySelectorAll('.auth-tab')[i].classList.toggle('on',x===t);});authMsg('','');}
+function authMsg(m,type){const e=document.getElementById('authErr'),o=document.getElementById('authOk');e.style.display='none';o.style.display='none';if(!m)return;if(type==='ok'){o.textContent=m;o.style.display='block';}else{e.textContent=m;e.style.display='block';}}
+
+async function doSignIn(){
+  const email=document.getElementById('siEmail').value.trim(),pass=document.getElementById('siPass').value;
+  if(!email||!pass){authMsg('Enter email and password');return;}
+  const btn=document.getElementById('signinBtn');btn.disabled=true;btn.textContent='Signing in...';
+  try{
+    const r=await fetch(SB+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'apikey':SK,'Content-Type':'application/json'},body:JSON.stringify({email,password:pass})});
+    const d=await r.json();
+    if(d.error||!d.access_token){authMsg(d.error_description||d.msg||'Sign in failed');btn.disabled=false;btn.textContent='Sign In →';return;}
+    user={id:d.user.id,email:d.user.email,name:d.user.user_metadata?.name||email.split('@')[0],token:d.access_token};
+    try{localStorage.setItem('lf_s',JSON.stringify(user));}catch(e){}
+    boot();
+  }catch(e){authMsg('Error: '+e.message);btn.disabled=false;btn.textContent='Sign In →';}
+}
+
+async function doSignUp(){
+  const name=document.getElementById('suName').value.trim(),email=document.getElementById('suEmail').value.trim();
+  const pass=document.getElementById('suPass').value,branch=document.getElementById('suBranch').value.trim();
+  if(!name||!email||!pass){authMsg('Fill all fields');return;}
+  if(pass.length<6){authMsg('Password needs 6+ characters');return;}
+  try{
+    const r=await fetch(SB+'/auth/v1/signup',{method:'POST',headers:{'apikey':SK,'Content-Type':'application/json'},body:JSON.stringify({email,password:pass,data:{name,branch}})});
+    const d=await r.json();
+    if(d.error){authMsg(d.msg||d.error.message||'Sign up failed');return;}
+    authMsg('Account created! Verify your email then sign in.','ok');authTab('signin');
+  }catch(e){authMsg('Error: '+e.message);}
+}
+
+async function doReset(){
+  const email=document.getElementById('rstEmail').value.trim();
+  if(!email){authMsg('Enter your email');return;}
+  await fetch(SB+'/auth/v1/recover',{method:'POST',headers:{'apikey':SK,'Content-Type':'application/json'},body:JSON.stringify({email})});
+  authMsg('Reset link sent.','ok');
+}
+
+function doSignOut(){try{localStorage.removeItem('lf_s');}catch(e){}if(window._lf_tick){clearInterval(window._lf_tick);window._lf_tick=null;}user=null;leads=[];profile={};addedIds=new Set();document.getElementById('authWrap').style.display='flex';document.getElementById('appWrap').style.display='none';}
+
+/* ══ BOOT ══════════════════════════════════════ */
+async function boot(){
+  document.getElementById('authWrap').style.display='none';
+  document.getElementById('appWrap').style.display='block';
+  const nm=user.name||user.email;
+  document.getElementById('userNm').textContent=nm;
+  document.getElementById('userAv').textContent=nm[0].toUpperCase();
+  updCities();loadKey();loadCalendly();loadAgt();
+  try{const a=localStorage.getItem('lf_aut');if(a)setAut(a,true);}catch(e){}
+  try{const s=JSON.parse(localStorage.getItem('lf_st_'+(user?.id||''))||'{}');Object.assign(stats,s);}catch(e){}
+  await loadLeads();await loadProfile();
+  refreshHome();renderPipe();renderFU();renderStats();
+  if(!window._lf_tick)window._lf_tick=setInterval(tick,1000);tick();
+  if(agtCfg.brief)setTimeout(runBrief,1400);
+  aLog('LeadFlow agent ready · '+leads.length+' leads in pipeline','ok');
+  goto('home');
+  setTimeout(()=>{},100);
+}
+
+async function loadLeads(){
+  try{
+    const d=await db('leads?order=created_at.desc&limit=200');
+    leads=d||[];
+    // Rebuild addedIds from DB — single source of truth
+    addedIds=new Set(leads.map(l=>l.source_id).filter(Boolean));
+    document.getElementById('pipeBadge').textContent=leads.length;
+  }catch(e){aLog('Load error: '+e.message,'w');leads=[];addedIds=new Set();}
+}
+
+async function loadProfile(){
+  try{const d=await db('profiles?limit=1');if(d&&d.length){profile=d[0];const fmap={Name:'name',Phone:'phone',Branch:'branch',Email:'email',Company:'company',Fsp:'fsp',Focus:'focus',Cal:'calendly',Sig:'signature',N8n:'n8n_webhook',Brevo:'brevo_key'};Object.entries(fmap).forEach(([id,key])=>{const el=document.getElementById('prof'+id);if(el&&profile[key])el.value=profile[key];});
+    const n8nInp=document.getElementById('profN8n');
+    const savedN8n=profile.n8n_webhook||(()=>{try{return localStorage.getItem('lf_n8n')||'';}catch(e){return '';}})();
+  const savedBrevo=profile.brevo_key||(()=>{try{return localStorage.getItem('lf_brevo_key')||'';}catch(e){return '';}})();
+    if(n8nInp&&savedN8n)n8nInp.value=savedN8n;
+    profile.n8n_webhook=savedN8n;
+    const nb=document.getElementById('n8nStatusBox');if(nb&&savedN8n){nb.innerHTML='<strong style="color:#065F46">n8n Agent Connected</strong> — <code style="font-size:11px">'+savedN8n.replace('https://','')+'</code>';}
+  }}catch(e){}
+}
+
+async function saveProfile(){
+  const g=id=>document.getElementById(id)?.value||'';
+  profile.name=g('profName');profile.phone=g('profPhone');
+  profile.branch=g('profBranch');profile.email=g('profEmail');
+  profile.company=g('profCompany');profile.fsp=g('profFsp');
+  profile.focus=g('profFocus');profile.calendly=g('profCal');
+  profile.signature=g('profSig');
+  profile.n8n_webhook=g('profN8n').trim();
+  profile.brevo_key=g('profBrevo').trim();
+  try{localStorage.setItem('lf_brevo_key',profile.brevo_key);}catch(e){}
+  try{localStorage.setItem('lf_n8n',profile.n8n_webhook);}catch(e){}
+  updateSvcStatus();  const nb=document.getElementById('n8nStatusBox');if(nb&&profile.n8n_webhook){nb.innerHTML='<strong style="color:#065F46">n8n Agent Connected</strong> — webhook saved. Agent will call <code style="font-size:11px">'+profile.n8n_webhook.replace('https://','')+'</code> to find leads.';}
+  try{const ex=await db('profiles?user_id=eq.'+user.id);if(ex&&ex.length)await db('profiles?user_id=eq.'+user.id,{method:'PATCH',body:JSON.stringify(profile)});else await db('profiles',{method:'POST',body:JSON.stringify({...profile,user_id:user.id})});toast('Profile saved ✓');}catch(e){toast('Save error');}
+}
+
+/* ══ NAVIGATION ════════════════════════════════ */
+const TITLES={home:'Command Centre',agent:'AI Agent',pipeline:'Pipeline',followups:'Follow-ups',import:'Import Leads',email:'Email Generator',search:'AI Lead Search',script:'Call Script',stats:'Stats',profile:'Profile'};
+function goto(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.sb-item').forEach(b=>b.classList.remove('on'));
+  const p=document.getElementById('page-'+id);if(p)p.classList.add('on');
+  const n=document.getElementById('nav-'+id);if(n)n.classList.add('on');
+  document.getElementById('tnTitle').innerHTML=(TITLES[id]||id);
+  if(id==='pipeline')renderPipe();
+  if(id==='followups')renderFU();
+  if(id==='stats'){loadSt();renderStats();}
+  if(id==='home')refreshHome();
+  if(id==='agent')renderApprs();
+  window.scrollTo(0,0);
+  setTimeout(()=>lucide.createIcons(),50);
+}
+
+/* ══ CITIES ════════════════════════════════════ */
+function updCities(){const p=document.getElementById('srchProv').value;const s=document.getElementById('srchCity');const c=CITIES[p]||['Johannesburg'];s.innerHTML=c.map(x=>`<option>${x}</option>`).join('');}
+
+/* ══ RIPPLE / PULSE FEEDBACK ══════════════════ */
+function ripple(el){el.classList.remove('pulse');void el.offsetWidth;el.classList.add('pulse');setTimeout(()=>el.classList.remove('pulse'),400);}
+document.addEventListener('click',e=>{const t=e.target.closest('button,.metric-card,.pipe-card,.dir-card,.aut-btn,.mod-card,.sb-item');if(t&&!t.dataset.noRipple){t.style.transform='scale(0.98)';setTimeout(()=>{t.style.transform='';},120);}});
+
+/* ══ CSV IMPORT ════════════════════════════════ */
+function onDOver(e){e.preventDefault();document.getElementById('dropZone').classList.add('drag');}
+function onDLeave(){document.getElementById('dropZone').classList.remove('drag');}
+function onDrop(e){e.preventDefault();onDLeave();const f=e.dataTransfer.files[0];if(f)readCSVFile(f);}
+function onFileSelect(e){const f=e.target.files[0];if(f)readCSVFile(f);}
+function readCSVFile(f){const r=new FileReader();r.onload=e=>showPrev(parseCSV(e.target.result));r.readAsText(f);}
+function parsePaste(){const t=document.getElementById('csvPaste').value.trim();if(!t){toast('Paste CSV data first');return;}showPrev(parseCSV(t));}
+
+function parseCSV(txt){
+  const lines=txt.trim().split('\n').map(l=>l.trim()).filter(l=>l);
+  if(!lines.length)return[];
+  const hdr=lines[0].split(',').map(h=>h.trim().toLowerCase().replace(/['"]/g,''));
+  const rows=[];
+  for(let i=1;i<lines.length;i++){
+    const vals=lines[i].split(',').map(v=>v.trim().replace(/^["']|["']$/g,''));
+    const g=(...keys)=>{for(const k of keys){const idx=hdr.indexOf(k);if(idx>-1&&vals[idx])return vals[idx];}return '';};
+    const co=g('company name','company','business name','business','name','trading name')||vals[0]||'';
+    if(!co||co.length<2)continue;
+    rows.push({company:co,phone:g('phone','telephone','tel','mobile','cell'),contact:g('contact','contact person','owner','manager','director'),industry:g('industry','category','type','sector'),address:g('address','city','location','area','town'),email:g('email','email address'),website:g('website','web','url','site')});
+  }
+  return rows;
+}
+
+function showPrev(rows){
+  window._csvRows=rows;
+  if(!rows.length){document.getElementById('importPrev').innerHTML='<div style="color:var(--red);font-size:13px;padding:10px">No valid rows found. Check your CSV has a Company Name column.</div>';return;}
+  document.getElementById('importPrev').innerHTML=`
+    <div style="background:#ECFDF5;border:1px solid #A7F3D0;border-radius:var(--r);padding:14px;margin-bottom:12px">
+      <div style="font-size:13px;font-weight:700;color:#065F46">✅ ${rows.length} leads ready</div>
+      <div style="font-size:12px;color:var(--sub);margin-top:5px">${rows.slice(0,3).map(r=>`• ${esc(r.company)}${r.phone?' · '+esc(r.phone):''}${r.industry?' · '+esc(r.industry):''}`).join('<br>')}</div>
+    </div>
+    <button class="btn btn-g" onclick="ripple(this);doImport(window._csvRows)"> Import All ${rows.length} Leads
+    </button>`;
+  
+}
+
+async function doImport(rows){
+  if(!rows||!rows.length)return;
+  let added=0,skip=0,errs=0;
+  // Always reload from DB first to get true state
+  await loadLeads();
+  const btn=document.querySelector('[onclick*="doImport"]');
+  if(btn){btn.disabled=true;btn.textContent='Importing...';}
+  for(const row of rows){
+    if(!row.company||row.company.length<2){skip++;continue;}
+    const slug=(row.company||'').toLowerCase().replace(/[^a-z0-9]+/g,'-');
+    if(addedIds.has(slug)){skip++;continue;}
+    const sc=row.phone?3:2;
+    const fu=new Date();fu.setDate(fu.getDate()+2);
+    const lead={
+      user_id:user.id,company:row.company,phone:row.phone||'',
+      contact:row.contact||'',industry:row.industry||'',
+      address:row.address||row.city||'',website:row.website||'',
+      email:row.email||'',source:'CSV Import',
+      source_id:slug,status:'Cold',score:sc,
+      followup:fu.toISOString().split('T')[0],
+      notes:'',created_at:new Date().toISOString()
+    };
+    try{
+      const res=await db('leads',{method:'POST',body:JSON.stringify(lead)});
+      const sv=Array.isArray(res)?res[0]:res;
+      if(sv&&sv.id){leads.unshift(sv);addedIds.add(slug);added++;}
+      else if(Array.isArray(res)&&res.length===0){skip++;} // ignored duplicate
+      else{leads.unshift(lead);addedIds.add(slug);added++;} // fallback if no id returned
+    }catch(e){
+      // Try without source_id constraint — strip and retry
+      try{
+        const lead2={...lead,source_id:slug+'_'+Date.now()};
+        const res2=await db('leads',{method:'POST',body:JSON.stringify(lead2)});
+        const sv2=Array.isArray(res2)?res2[0]:res2;
+        if(sv2){leads.unshift(sv2);addedIds.add(slug);added++;}else{errs++;aLog('Err: '+e.message,'w');}
+      }catch(e2){errs++;aLog('Import err: '+row.company+' — '+e2.message,'w');}
+    }
+  }
+  document.getElementById('pipeBadge').textContent=leads.length;
+  const errColor=errs>0?'#FEF2F2':'#ECFDF5';const errBorder=errs>0?'#FECACA':'#A7F3D0';const errText=errs>0?'var(--red)':'#065F46';
+  const msg=`Import done: ${added} added${skip?' · '+skip+' skipped':''}${errs?' · '+errs+' errors — check Agent Log':''}`;
+  document.getElementById('importPrev').innerHTML=`<div style="background:${errColor};border:1px solid ${errBorder};border-radius:var(--r);padding:14px;font-size:13px;font-weight:700;color:${errText}">${msg}</div>`;
+  addAct('CSV Import: '+added+' leads added','b');
+  aLog('CSV: '+added+' added, '+skip+' skipped, '+errs+' errors','ok');
+  toast(added>0?added+' leads imported':'No new leads — already in pipeline');
+  refreshHome();renderPipe();window._csvRows=null;
+  if(btn){btn.disabled=false;btn.textContent='Import All';}
+}
+
+async function addManual(){
+  const co=document.getElementById('mCo').value.trim();if(!co){toast('Company name required');return;}
+  const slug=co.toLowerCase().replace(/[^a-z0-9]+/g,'-');
+  if(addedIds.has(slug)){toast(co+' already in pipeline');return;}
+  const ph=document.getElementById('mPh').value;const sc=ph?3:2;
+  const fu=new Date();fu.setDate(fu.getDate()+2);
+  const lead={user_id:user.id,company:co,phone:ph,contact:document.getElementById('mCt').value,industry:document.getElementById('mInd').value,address:document.getElementById('mAddr').value,website:document.getElementById('mWeb').value,source:'Manual',source_id:slug,status:'Cold',score:sc,followup:fu.toISOString().split('T')[0],notes:'',created_at:new Date().toISOString()};
+  try{
+    const res=await db('leads',{method:'POST',body:JSON.stringify(lead)});const sv=Array.isArray(res)?res[0]:res;
+    if(sv&&sv.id){leads.unshift(sv);addedIds.add(slug);}
+    document.getElementById('pipeBadge').textContent=leads.length;
+    ['mCo','mPh','mCt','mInd','mAddr','mWeb'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    addAct('Manual add: '+co,'b');aLog('Added: '+co,'ok');toast('✅ '+co+' added');
+    refreshHome();renderPipe();
+    if(agtCfg.draft)setTimeout(()=>draftEm(sv||lead),500);
+  }catch(e){toast('Error: '+e.message);}
+}
+
+/* ══ AI SEARCH ═════════════════════════════════ */
+function doSearch(){
+  const ind=document.getElementById('srchInd').value,city=document.getElementById('srchCity').value||'Johannesburg',prov=document.getElementById('srchProv').value||'Gauteng';
+  let key='';try{key=(localStorage.getItem('lf_k')||'').trim();}catch(e){}
+  if(!key||key.length<20){document.getElementById('srchRes').innerHTML=`<div class="key-box"><div style="font-size:36px;margin-bottom:10px"></div><h3>API Key Required</h3><p>AI search uses Claude AI (~R0.02 per search).<br>Or use <strong>Import Leads</strong> — completely free.</p><div class="key-row"><input type="password" class="fi" id="inlineKey" placeholder="sk-ant-api03-..." style="flex:1"><button class="btn btn-p" onclick="saveInlineKey()">Unlock</button></div><div style="margin-top:12px"><button class="btn btn-g" onclick="goto('import')">Free Import Instead →</button></div></div>`;return;}
+  const btn=document.getElementById('srchBtn');btn.disabled=true;btn.innerHTML=' Searching...';
+  document.getElementById('srchRes').innerHTML=`<div class="card"><div style="text-align:center;padding:50px 20px"><div class="spinner"></div><div style="font-size:14px;font-weight:600;margin-bottom:4px">AI scanning ${ind} businesses in ${city}...</div><div style="font-size:12px;color:var(--sub)">Google Maps · Yellow Pages · LinkedIn · Brabys · CIPC</div><div class="dbg" id="dbg"></div></div></div>`;
+  runAI(key,ind,city,prov);
+}
+
+function sLog(m){const el=document.getElementById('dbg');if(el){el.innerHTML+=`<div>${new Date().toLocaleTimeString()} — ${m}</div>`;el.scrollTop=el.scrollHeight;}aLog(m,'li');}
+
+async function runAI(key,ind,city,prov){
+  const btn=document.getElementById('srchBtn');
+  const pipeNms=leads.map(l=>(l.company||'').toLowerCase());
+  const prompt=`List 10 real ${ind} businesses located in ${city}, ${prov}, South Africa. Return ONLY a JSON array, no markdown. Each: {"name":"","address":"","phone":"","contact":"","industry":"${ind}","website":"","source":"knowledge","confidence":75,"source_id":"slug"}. Real businesses only.`;
+  try{
+    sLog('Calling Anthropic API...');
+    const r=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:2000,messages:[{role:'user',content:prompt}]})});
+    const d=await r.json();sLog('Status: '+(d.error?'ERROR '+d.error.type:'OK'));
+    if(d.error){
+      if(d.error.type==='authentication_error'){try{localStorage.removeItem('lf_k');}catch(e){}showSrchErr('API key invalid.',true);}
+      else if(d.error.message&&(d.error.message.includes('credit')||d.error.message.includes('balance')))showSrchErr('No credits. Add $5 at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> → Billing.',false);
+      else showSrchErr('API error: '+d.error.message,false);
+      btn.disabled=false;btn.innerHTML=' Search';return;
+    }
+    const text=(d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+    const clean=text.replace(/```json/gi,'').replace(/```/g,'').trim();
+    const a1=clean.indexOf('['),a2=clean.lastIndexOf(']');
+    if(a1===-1){showSrchErr('No results returned. Try a different city.',false);btn.disabled=false;btn.innerHTML=' Search';return;}
+    const biz=JSON.parse(clean.slice(a1,a2+1));
+    const fresh=biz.filter(b=>{if(!b.name||b.name.length<2)return false;const nm=b.name.toLowerCase();const slug=nm.replace(/[^a-z0-9]+/g,'-')+'-'+city.toLowerCase().replace(/\s/g,'-');return !pipeNms.includes(nm)&&!addedIds.has(slug);});
+    sLog('Found '+fresh.length+' new leads');
+    renderSrch(fresh,ind,city);
+  }catch(e){sLog('Error: '+e.message);showSrchErr('Search failed: '+e.message,false);btn.disabled=false;btn.innerHTML=' Search';}
+}
+
+function renderSrch(biz,ind,city){
+  const btn=document.getElementById('srchBtn');btn.disabled=false;btn.innerHTML=' Search';
+  if(!biz.length){document.getElementById('srchRes').innerHTML=`<div class="card"><div class="empty"><div class="empty-ico"></div><div>No new leads for ${ind} in ${city}</div></div></div>`;return;}
+  aLog('Found '+biz.length+' leads: '+ind+' · '+city,'ok');
+  document.getElementById('srchRes').innerHTML=`<div style="font-size:13px;color:var(--sub);margin-bottom:10px">${biz.length} real businesses · ${ind} · ${city}</div>`
+    +biz.map((b,i)=>{
+      const sc=scBiz(b);const pips=Array.from({length:5},(_,j)=>`<div class="pip ${j<sc?'on':''}"></div>`).join('');
+      return `<div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:16px;transition:box-shadow .15s" onmouseover="this.style.boxShadow='var(--sh-md)'" onmouseout="this.style.boxShadow=''">
+        <div style="flex:1"><div style="font-size:14px;font-weight:700;margin-bottom:4px">${esc(b.name)}</div>
+        <div style="font-size:12px;color:var(--sub);display:flex;flex-wrap:wrap;gap:10px">${b.industry?`<span>${esc(b.industry)}</span>`:''}${b.address?`<span>${esc(b.address)}</span>`:''}${b.phone?`<span>${esc(b.phone)}</span>`:''}${b.contact?`<span>${esc(b.contact)}</span>`:''}</div>
+        <div style="display:flex;gap:3px;margin-top:6px">${pips}</div></div>
+        <button class="btn btn-p btn-sm" onclick='ripple(this);addSrch(${i},"${esc(ind)}","${esc(city)}")' data-biz='${JSON.stringify(b).replace(/'/g,"&#39;")}'>+ Add</button>
+      </div>`;
+    }).join('');
+}
+
+function showSrchErr(msg,showKey){document.getElementById('srchRes').innerHTML=showKey?`<div class="key-box"><h3>API Key Required</h3><p>${msg}</p><div class="key-row"><input type="password" class="fi" id="inlineKey" placeholder="sk-ant-api03-..." style="flex:1"><button class="btn btn-p" onclick="saveInlineKey()">Unlock</button></div><div style="margin-top:10px"><button class="btn btn-g" onclick="goto('import')">Free Import →</button></div></div>`:`<div class="err-box"><h3 style="color:var(--red);margin-bottom:6px">Search Error</h3><p style="font-size:13px;color:var(--sub);margin-bottom:14px">${msg}</p><div style="display:flex;gap:8px;justify-content:center"><button class="btn btn-p btn-sm" onclick="doSearch()">Retry</button><button class="btn btn-g btn-sm" onclick="goto('import')">Free Import</button></div></div>`;}
+
+async function addSrch(idx,ind,city){
+  const btns=document.querySelectorAll('[data-biz]');const btn=btns[idx];
+  if(btn){btn.disabled=true;btn.textContent='Adding...';}
+  let b={};try{b=JSON.parse(btn?.getAttribute('data-biz')||'{}');}catch(e){}
+  const slug=(b.name||'').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-'+city.toLowerCase().replace(/\s/g,'-');
+  const sc=scBiz(b);const fu=new Date();fu.setDate(fu.getDate()+(sc>=4?1:sc>=3?2:3));
+  const lead={user_id:user.id,company:b.name||'',phone:b.phone||'',contact:b.contact||'',industry:b.industry||ind,address:b.address||city,website:b.website||'',source:'AI Search',source_id:slug,status:sc>=4?'Hot':sc>=3?'Warm':'Cold',score:sc,followup:fu.toISOString().split('T')[0],notes:'',created_at:new Date().toISOString()};
+  try{
+    const res=await db('leads',{method:'POST',body:JSON.stringify(lead)});const sv=Array.isArray(res)?res[0]:res;leads.unshift(sv);addedIds.add(slug);
+    document.getElementById('pipeBadge').textContent=leads.length;
+    if(btn&&btn.parentElement)btn.parentElement.style.opacity='0.4';
+    addAct('Added: '+b.name,'b');toast('✅ '+b.name+' added');refreshHome();
+    if(agtCfg.draft)setTimeout(()=>draftEm(sv||lead),500);
+  }catch(e){toast('Error: '+e.message);if(btn){btn.disabled=false;btn.textContent='+ Add';}}
+}
+
+function scBiz(b){let s=2;if(b.phone)s++;if(b.contact)s++;if(b.website)s++;return Math.min(5,s);}
+
+/* ══ KEY & SETTINGS ════════════════════════════ */
+function saveKey(){const v=(document.getElementById('apiKeyInput')||{}).value||'';try{localStorage.setItem('lf_k',v.trim());}catch(e){}const st=document.getElementById('apiKeyStatus');if(st)st.innerHTML=v.length>20?'<span style="color:var(--green);font-weight:600">✅ Key saved</span>':'';}
+function loadKey(){try{const k=localStorage.getItem('lf_k')||'';const inp=document.getElementById('apiKeyInput');if(inp&&k)inp.value=k;const st=document.getElementById('apiKeyStatus');if(st&&k)st.innerHTML='<span style="color:var(--green);font-weight:600">✅ Key loaded</span>';}catch(e){}}
+function toggleKey(){const inp=document.getElementById('apiKeyInput');if(inp)inp.type=inp.type==='password'?'text':'password';}
+function saveInlineKey(){const inp=document.getElementById('inlineKey');if(!inp||!inp.value.trim())return;try{localStorage.setItem('lf_k',inp.value.trim());}catch(e){}const inp2=document.getElementById('apiKeyInput');if(inp2){inp2.value=inp.value.trim();saveKey();}toast('✅ Key saved');setTimeout(doSearch,300);}
+function saveCalendly(){const v=(document.getElementById('calendlyLink')||{}).value||'';try{localStorage.setItem('lf_cal',v.trim());}catch(e){}const st=document.getElementById('calendlyStatus');if(st)st.innerHTML=v.length>10?'<span style="color:var(--green);font-weight:600">✅ Booking link saved</span>':'';}
+function loadCalendly(){try{const k=localStorage.getItem('lf_cal')||'';const inp=document.getElementById('calendlyLink');if(inp&&k)inp.value=k;const st=document.getElementById('calendlyStatus');if(st&&k)st.innerHTML='<span style="color:var(--green);font-weight:600">✅ Loaded</span>';}catch(e){}}
+
+/* ══ EMAIL ══════════════════════════════════════ */
+async function genEmail(){
+  const co=document.getElementById('eCo').value.trim(),ct=document.getElementById('eCt').value.trim();
+  const ind=document.getElementById('eInd').value.trim(),city=document.getElementById('eCity').value.trim();
+  const pain=document.getElementById('ePain').value.trim();
+  if(!co){toast('Enter company name');return;}
+  const broker=profile.name||'Mpofuma',branch=profile.branch||'Outsurance',ph=profile.phone||'';
+  const btn=document.getElementById('eBtn');btn.disabled=true;btn.innerHTML=' Generating...';
+  let key='';try{key=(localStorage.getItem('lf_k')||'').trim();}catch(e){}
+  const fallback=buildEmail(co,ct,ind,city,pain,broker,branch,ph);
+  if(!key||key.length<20){document.getElementById('eOut').value=fallback;btn.disabled=false;btn.innerHTML=' Generate Email';toast('Template ready — add API key for AI version');stats.emails++;saveSt();return;}
+  try{
+    const r=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'meta-llama/llama-3.3-70b-instruct:free',max_tokens:350,messages:[{role:'user',content:`You are a 200 IQ commercial insurance broker writing a cold outreach email. Be intelligent, human, and specific — not generic. Never say "I hope this email finds you well."
+
+Write a cold email FROM mpofum@out.co.za TO ${co} (${ct||'the owner'}).
+Industry: ${ind||'commercial business'} in ${city||'Johannesburg, SA'}.
+Known risks/pain: ${pain||'typical '+ind+' risks'}.
+Broker: ${broker}, ${branch}.
+Phone: ${ph}.
+
+Format:
+Subject: [punchy, risk-specific subject line]
+
+[3-4 paragraphs. Lead with a specific risk insight for their industry. Make them feel you understand their business. End with a specific CTA — offer a free 15-min policy review. Sign off professionally.]
+
+Sent from: mpofum@out.co.za`}]})});
+    const d=await r.json();
+    if(d.error||!d.content)throw new Error(d.error?.message||'No response');
+    document.getElementById('eOut').value=(d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('').trim();
+  }catch(err){document.getElementById('eOut').value=fallback;toast('Using template ('+err.message+')');}
+  btn.disabled=false;btn.innerHTML=' Generate Email';
+  stats.emails++;saveSt();addAct('Email drafted: '+co,'b');
+}
+
+function buildEmail(co,ct,ind,city,pain,broker,branch,ph){
+  const riskMap={'Construction':'site liability, plant & equipment, contractor all-risks, and SASRIA cover','Transport & Logistics':'fleet exposure, cargo liability, and driver risk','Manufacturing':'machinery breakdown, fire, product liability, and business interruption','Hospitality & Restaurants':'liquor liability, fire risk, equipment breakdown, and public liability','Healthcare & Medical':'professional indemnity, medical malpractice, and cyber liability','Real Estate & Property':'property damage, landlord liability, and rental income protection','Mining':'environmental liability, mining equipment, and employee compensation','Solar & Renewable Energy':'installation risk, product liability, and panel replacement cover'};
+  const risk=riskMap[ind]||'commercial risk exposure, property damage, and liability gaps';
+  return `Subject: ${co} — Quick insurance question\n\nGood day ${ct||'there'},\n\nI work with ${ind||'commercial'} businesses in ${city||'SA'} and most are either overpaying or underinsured around ${risk}.${pain?' In your case: '+pain+'.':''}\n\nFree 15-minute policy review — no obligation. Worth it?\n\n${broker}\nOutsurance | ${ph} | mpofum@out.co.za`;
+}
+
+function copyEmail(){navigator.clipboard.writeText(document.getElementById('eOut').value).then(()=>toast('Copied to clipboard'));}
+function openOutlook(){const txt=document.getElementById('eOut').value;const m=txt.match(/^Subject:\s*(.+)/m);const s=m?m[1].trim():'Insurance Review';const b=txt.replace(/^Subject:[^\n]*/m,'').trim();window.open('https://outlook.office.com/mail/deeplink/compose?subject='+encodeURIComponent(s)+'&body='+encodeURIComponent(b),'_blank');}
+
+async function sendViaBrevo(toEmail,toName,subject,body){
+  const bk=profile.brevo_key||localStorage.getItem('lf_brevo_key')||'';
+  if(!bk)return false;
+  try{
+    const r=await fetch('https://api.brevo.com/v3/smtp/email',{
+      method:'POST',
+      headers:{'api-key':bk,'Content-Type':'application/json'},
+      body:JSON.stringify({sender:{name:profile.name||'Mpofuma',email:'mpofum@out.co.za'},to:[{email:toEmail,name:toName||toEmail}],replyTo:{email:'mpofum@out.co.za'},subject,textContent:body})
+    });
+    const d=await r.json();
+    if(d.messageId){aLog('Sent to '+toEmail+' ✓','s');return true;}
+    aLog('Brevo: '+(d.message||'send failed'),'w');return false;
+  }catch(e){aLog('Brevo error: '+e.message,'w');return false;}
+}
+
+async function autoFollowup(){
+  const today=new Date().toISOString().split('T')[0];
+  const overdue=leads.filter(l=>l.followup&&l.followup<=today&&l.status!=='Won'&&l.status!=='Closed');
+  if(!overdue.length)return;
+  aLog('Auto follow-up: '+overdue.length+' overdue leads','i');
+  for(const lead of overdue){
+    if(!lead.email||!profile.brevo_key)continue;
+    const subj='Following up — '+lead.company+' insurance review';
+    const body='Good day '+(lead.contact||'there')+',\n\nI reached out recently about a complimentary insurance review for '+lead.company+'.\n\nHave you had a chance to consider it? A 15-minute conversation could uncover significant savings or coverage gaps.\n\nAvailable this week?\n\n'+(profile.name||'Mpofuma')+'\nOutsurance | mpofum@out.co.za';
+    const sent=await sendViaBrevo(lead.email,lead.contact||lead.company,subj,body);
+    if(sent){
+      const newFu=new Date(Date.now()+3*86400000).toISOString().split('T')[0];
+      await db('leads?id=eq.'+lead.id,{method:'PATCH',body:JSON.stringify({followup:newFu,notes:(lead.notes||'')+' | AutoFU:'+today})});
+      lead.followup=newFu;
+    }
+  }
+}
+
+async function draftEm(lead){
+  const body=buildEmail(lead.company,lead.contact,lead.industry,lead.address,'',profile.name||'Mpofuma',profile.branch||'Outsurance',profile.phone||'');
+  apprs.push({id:'d_'+(lead.id||Date.now()),title:'Send intro email: '+(lead.company||''),sub:(lead.industry||'')+(lead.address?' · '+lead.address:''),body,onApprove:()=>{document.getElementById('eCo').value=lead.company||'';document.getElementById('eCt').value=lead.contact||'';document.getElementById('eInd').value=lead.industry||'';document.getElementById('eOut').value=body;goto('email');}});
+  renderApprs();
+}
+
+/* ══ PIPELINE ══════════════════════════════════ */
+function renderPipe(){
+  const filter=document.getElementById('pipeFilter').value;
+  const list=filter?leads.filter(l=>l.status===filter):leads;
+  const el=document.getElementById('pipeGrid');
+  if(!list.length){el.innerHTML=`<div class="empty" style="grid-column:1/-1"><div class="empty-ico"></div><div style="font-weight:600">No leads yet</div><div style="font-size:12px;margin-top:6px"><a href="#" onclick="goto('import')">Import free →</a></div></div>`;return;}
+  el.innerHTML=list.map(l=>{
+    const today=new Date();today.setHours(0,0,0,0);let fuH='';
+    if(l.followup){const fd=new Date(l.followup);fd.setHours(0,0,0,0);const diff=Math.floor((fd-today)/86400000);const cls=diff<0?'fu-over':diff===0?'fu-now':'fu-soon';const lbl=diff<0?`Overdue ${Math.abs(diff)}d`:diff===0?'Due today':`In ${diff}d`;fuH=`<div class="fu-chip ${cls}">${lbl}</div>`;}
+    const stC={'Hot':'b-hot','Warm':'b-warm','Cold':'b-cold','Contacted':'b-cont','Won':'b-won','Lost':'b-lost','DNC':'b-dnc'}[l.status]||'b-cold';
+    const pips=Array.from({length:5},(_,j)=>`<div class="pip ${j<(l.score||1)?'on':''}"></div>`).join('');
+    return `<div class="pipe-card" onclick="openLead('${l.id}')"><div class="pc-top"><div class="pc-name">${esc(l.company||'')}</div><span class="badge ${stC}">${l.status||'Cold'}</span></div><div class="pc-meta">${l.industry?`<div>${esc(l.industry)}</div>`:''}${l.address?`<div>${esc(l.address)}</div>`:''}${l.phone?`<div>${esc(l.phone)}</div>`:''}${l.contact?`<div>${esc(l.contact)}</div>`:''}</div><div style="display:flex;gap:3px;margin-bottom:8px">${pips}</div>${fuH}<div class="pc-btns" onclick="event.stopPropagation()">${l.phone?`<button class="btn btn-s btn-xs" onclick="window.open('tel:${esc(l.phone)}')"></button>`:''}<button class="btn btn-ghost btn-xs" onclick="prefillEmail('${l.id}')"></button></div></div>`;
+  }).join('');
+  setTimeout(()=>lucide.createIcons(),50);
+}
+
+function prefillEmail(id){const l=leads.find(x=>x.id===id);if(!l)return;document.getElementById('eCo').value=l.company||'';document.getElementById('eCt').value=l.contact||'';document.getElementById('eInd').value=l.industry||'';document.getElementById('eCity').value=l.address||'';goto('email');}
+
+/* ══ LEAD MODAL ════════════════════════════════ */
+function openLead(id){const l=leads.find(x=>x.id===id);if(!l)return;curLid=id;document.getElementById('ldT').textContent=l.company||'Lead';document.getElementById('ldSub').textContent=(l.industry||'')+(l.address?' · '+l.address:'');document.getElementById('ldSt').value=l.status||'Cold';document.getElementById('ldFU').value=l.followup||'';document.getElementById('ldNo').value=l.notes||'';openM('leadModal');}
+async function saveLead(){const l=leads.find(x=>x.id===curLid);if(!l)return;l.status=document.getElementById('ldSt').value;l.followup=document.getElementById('ldFU').value;l.notes=document.getElementById('ldNo').value;try{await db('leads?id=eq.'+curLid,{method:'PATCH',body:JSON.stringify({status:l.status,followup:l.followup,notes:l.notes})});closeM('leadModal');renderPipe();renderFU();refreshHome();toast('Saved');}catch(e){toast('Error: '+e.message);}}
+async function delLead(){if(!confirm('Delete this lead?'))return;try{await db('leads?id=eq.'+curLid,{method:'DELETE'});leads=leads.filter(l=>l.id!==curLid);document.getElementById('pipeBadge').textContent=leads.length;closeM('leadModal');renderPipe();refreshHome();toast('Deleted');}catch(e){toast('Delete error');}}
+
+/* ══ FOLLOW-UPS ════════════════════════════════ */
+function renderFU(){
+  const today=new Date();today.setHours(0,0,0,0);
+  const due=leads.filter(l=>{if(!l.followup||l.status==='Won'||l.status==='DNC')return false;const fd=new Date(l.followup);fd.setHours(0,0,0,0);return fd<=today;}).sort((a,b)=>new Date(a.followup)-new Date(b.followup));
+  const fb=document.getElementById('fuBadge');if(due.length){fb.textContent=due.length;fb.style.display='inline';}else fb.style.display='none';
+  const el=document.getElementById('fuList');
+  if(!due.length){el.innerHTML=`<div class="empty"><div class="empty-ico">✅</div><div style="font-weight:600">No overdue follow-ups</div></div>`;return;}
+  el.innerHTML=due.map(l=>{
+    const fd=new Date(l.followup);fd.setHours(0,0,0,0);const diff=Math.floor((fd-today)/86400000);
+    const col=diff<0?'var(--red)':'var(--orange)';const lbl=diff<0?`${Math.abs(diff)}d overdue`:'Today';
+    return `<div class="fu-row"><div class="fu-bar" style="background:${col}"></div><div style="flex:1"><div style="font-size:14px;font-weight:700">${esc(l.company||'')}</div><div style="font-size:12px;color:var(--sub);margin-top:2px">${esc(l.industry||'')} · ${lbl} · ${esc(l.followup||'')}</div></div><div style="display:flex;gap:6px">${l.phone?`<button class="btn btn-s btn-xs" onclick="window.open('tel:${esc(l.phone)}')"></button>`:''}<button class="btn btn-ghost btn-xs" onclick="prefillEmail('${l.id}')"></button><button class="btn btn-s btn-xs" onclick="openLead('${l.id}')">Update</button></div></div>`;
+  }).join('');
+  setTimeout(()=>lucide.createIcons(),50);
+}
+
+/* ══ STATS ══════════════════════════════════════ */
+function renderStats(){
+  document.getElementById('st-leads').textContent=leads.length;
+  document.getElementById('st-emails').textContent=stats.emails||0;
+  document.getElementById('st-calls').textContent=stats.calls||0;
+  document.getElementById('st-won').textContent=leads.filter(l=>l.status==='Won').length;
+  const brk={};leads.forEach(l=>{brk[l.status||'Cold']=(brk[l.status||'Cold']||0)+1;});
+  document.getElementById('statsBrk').innerHTML=leads.length?Object.entries(brk).map(([s,n])=>`<div class="ov-row"><div class="ov-lbl">${s}</div><div class="ov-track"><div class="ov-fill" style="width:${Math.round(n/leads.length*100)}%"></div></div><div class="ov-n">${n}</div></div>`).join(''):'<div style="color:var(--sub);font-size:13px">No leads yet.</div>';
+}
+function loadSt(){try{const s=JSON.parse(localStorage.getItem('lf_st_'+(user?.id||''))||'{}');Object.assign(stats,s);}catch(e){}}
+function saveSt(){try{localStorage.setItem('lf_st_'+(user?.id||''),JSON.stringify(stats));}catch(e){}}
+
+/* ══ HOME ════════════════════════════════════════ */
+function refreshHome(){
+  const today=new Date();today.setHours(0,0,0,0);
+  const hot=leads.filter(l=>l.score>=4).length;
+  const od=leads.filter(l=>{if(!l.followup||l.status==='Won'||l.status==='DNC')return false;const fd=new Date(l.followup);fd.setHours(0,0,0,0);return fd<today;}).length;
+  const won=leads.filter(l=>l.status==='Won').length;
+  document.getElementById('m-leads').textContent=leads.length;
+  document.getElementById('m-emails').textContent=stats.emails||0;
+  document.getElementById('m-mtg').textContent=stats.meetings||0;
+  const pipe=leads.reduce((a,l)=>{const est=l.score>=4?25000:l.score>=3?12000:6000;return a+est;},0);document.getElementById('m-pipe').textContent='R'+pipe.toLocaleString();
+  document.getElementById('m-leads-d').textContent='↑ '+hot+' hot leads';
+  document.getElementById('ac-mined').textContent=leads.length;
+  document.getElementById('ac-sent').textContent=stats.emails||0;
+  document.getElementById('ac-mtg').textContent=stats.meetings||0;
+  document.getElementById('pipeBadge').textContent=leads.length;
+  const h=new Date().getHours();
+  // greeting element not in DOM
+  if(od>0){document.getElementById('qs-fu-lbl').textContent=od+' overdue — action needed';document.getElementById('qs-fu-lbl').style.color='var(--red)';}
+  renderBreakdown();renderActFeed();renderFU();
+}
+
+function renderBreakdown(){
+  const brk={};leads.forEach(l=>{brk[l.status||'Cold']=(brk[l.status||'Cold']||0)+1;});
+  document.getElementById('homeBreakdown').innerHTML=leads.length?Object.entries(brk).map(([s,n])=>`<div class="ov-row"><div class="ov-lbl">${s}</div><div class="ov-track"><div class="ov-fill" style="width:${Math.round(n/leads.length*100)}%"></div></div><div class="ov-n">${n}</div></div>`).join(''):'<div style="color:var(--sub);font-size:13px;padding:10px 0">No leads yet. <a href="#" onclick="goto(\'import\')">Import free →</a></div>';
+}
+
+/* ══ AGENT ════════════════════════════════════ */
+function runBrief(){
+  const today=new Date();today.setHours(0,0,0,0);let hot=0,od=0;
+  leads.forEach(l=>{if(l.score>=4)hot++;if(l.followup){const fd=new Date(l.followup);fd.setHours(0,0,0,0);if(fd<today)od++;}});
+  aLog('Pipeline: '+leads.length+' leads · '+hot+' hot · '+od+' overdue','ok');
+  if(od>0)aLog(od+' follow-ups overdue — check Follow-ups','w');
+  if(hot>0)aLog(hot+' hot leads ready for closing call','w');
+  refreshHome();
+}
+
+function setAut(lvl,silent){
+  autLvl=lvl;
+  ['supervised','semi','full'].forEach(l=>{const b=document.getElementById('aut-'+l);if(b)b.classList.toggle('on',l===lvl);});
+  try{localStorage.setItem('lf_aut',lvl);}catch(e){}
+  if(!silent)aLog('Autonomy set: '+lvl,'lb');
+}
+
+function renderApprs(){
+  const c=document.getElementById('apprCard'),l=document.getElementById('apprList'),b=document.getElementById('apprBadge'),m=document.getElementById('mod-o');
+  if(!apprs.length){if(c)c.style.display='none';if(m)m.className='ms-g';if(m)m.textContent='0 pending';return;}
+  if(c)c.style.display='block';if(b)b.textContent=apprs.length;if(m){m.textContent=apprs.length+' pending';m.className='ms-a';}
+  const ab=document.getElementById('agentBadge');if(ab){ab.textContent=apprs.length;ab.style.display='inline';}
+  if(l)l.innerHTML=apprs.map((a,i)=>`<div class="appr-item" onclick="openAppr(${i})"><div style="flex:1"><div style="font-size:13px;font-weight:700">${esc(a.title)}</div><div style="font-size:11px;color:var(--muted);margin-top:2px">${esc(a.sub||'')}</div></div><div style="display:flex;gap:6px"><button class="btn btn-s btn-xs" onclick="event.stopPropagation();dismissAppr(${i})">Skip</button><button class="btn btn-p btn-xs" onclick="event.stopPropagation();openAppr(${i})">Review →</button></div></div>`).join('');
+}
+
+function openAppr(i){const a=apprs[i];if(!a)return;apprIdx=i;document.getElementById('apT').textContent=a.title;document.getElementById('apSub').textContent=a.sub||'';document.getElementById('apBody').textContent=a.body||'';openM('apprModal');}
+function appAppr(){const a=apprs[apprIdx];closeM('apprModal');if(a&&a.onApprove)a.onApprove();aLog('Approved: '+(a?a.title:''),'ok');dismissAppr(apprIdx);}
+function rejAppr(){closeM('apprModal');if(apprIdx!==null)dismissAppr(apprIdx);}
+function dismissAppr(i){apprs.splice(i,1);apprIdx=null;renderApprs();}
+
+function loadAgt(){try{const s=JSON.parse(localStorage.getItem('lf_agt')||'{}');Object.assign(agtCfg,s);}catch(e){}Object.entries({score:'ag_score',fu:'ag_fu',draft:'ag_draft',book:'ag_book',brief:'ag_brief'}).forEach(([k,id])=>{const el=document.getElementById(id);if(el)el.checked=agtCfg[k];});}
+function saveAgt(){const map={score:'ag_score',fu:'ag_fu',draft:'ag_draft',book:'ag_book',brief:'ag_brief'};Object.entries(map).forEach(([k,id])=>{const el=document.getElementById(id);if(el)agtCfg[k]=el.checked;});try{localStorage.setItem('lf_agt',JSON.stringify(agtCfg));}catch(e){}toast('Settings saved');}
+
+/* ══ ACTIVITY FEED ══════════════════════════════ */
+function addAct(text,type){const now=new Date();const t=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');actLog.unshift({text,type:type||'li',time:t});if(actLog.length>20)actLog.pop();renderActFeed();}
+function renderActFeed(){const el=document.getElementById('actFeed');if(!el)return;if(!actLog.length){el.innerHTML='<div style="color:var(--sub);font-size:13px">No activity yet.</div>';return;}const cols={b:'var(--blue)',ok:'var(--green)',w:'var(--orange)',li:'var(--muted)'};el.innerHTML=actLog.slice(0,8).map(a=>`<div class="act-item"><div class="act-dot" style="background:${cols[a.type]||'var(--muted)'}"></div><div class="act-text">${esc(a.text)}</div><div class="act-time">${a.time}</div></div>`).join('');}
+
+/* ══ LOG ════════════════════════════════════════ */
+function aLog(m,type){
+  const el=document.getElementById('agentLog');if(!el)return;
+  const now=new Date();const t=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0')+':'+now.getSeconds().toString().padStart(2,'0');
+  const cls=type==='ok'?'lo':type==='w'?'lw':type==='lb'?'lb':'li';
+  const d=document.createElement('div');d.className='ll';d.innerHTML=`<span style="color:#475569;margin-right:8px">${t}</span><span class="${cls}">${esc(m)}</span>`;
+  el.insertBefore(d,el.firstChild);if(el.children.length>80)el.removeChild(el.lastChild);
+}
+function clearLog(){const el=document.getElementById('agentLog');if(el)el.innerHTML='<div class="ll li">— Log cleared —</div>';}
+
+/* ══ MODALS ════════════════════════════════════ */
+function openM(id){const m=document.getElementById(id);if(m)m.classList.add('open');}
+function closeM(id){const m=document.getElementById(id);if(m)m.classList.remove('open');}
+document.querySelectorAll('.modal-bg').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});});
+
+/* ══ UTILS ══════════════════════════════════════ */
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function tick(){const n=new Date();document.getElementById('clockEl').textContent=n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0')+':'+n.getSeconds().toString().padStart(2,'0');}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3100);}
+
+
+
+function updateSvcStatus(){
+  const dbDot=document.getElementById('svcDbDot'),dbVal=document.getElementById('svcDbVal');
+  if(dbDot){dbDot.className='svc-dot svc-ok';}
+  if(dbVal){dbVal.textContent=leads.length+' leads — Connected';dbVal.style.color='var(--green)';}
+  const eDot=document.getElementById('svcEmailDot'),eVal=document.getElementById('svcEmailVal');
+  const hasBrevo=!!(profile.brevo_key&&profile.brevo_key.length>10);
+  if(eDot)eDot.className='svc-dot '+(hasBrevo?'svc-ok':'svc-err');
+  if(eVal){eVal.textContent=hasBrevo?'Brevo — Connected':'Add Brevo API key';eVal.style.color=hasBrevo?'var(--green)':'var(--red)';}
+  const nDot=document.getElementById('svcAgentDot'),nVal=document.getElementById('svcAgentVal');
+  const hasN8n=!!(profile.n8n_webhook&&profile.n8n_webhook.includes('n8n'));
+  if(nDot)nDot.className='svc-dot '+(hasN8n?'svc-ok':'svc-warn');
+  if(nVal){nVal.textContent=hasN8n?'n8n — Webhook live':'Add n8n webhook URL';nVal.style.color=hasN8n?'var(--green)':'var(--orange)';}
+  const lr=document.getElementById('svcLastRun');
+  try{const t=localStorage.getItem('lf_last_run');if(lr)lr.textContent=t||'Never';}catch(e){}
+}
+/* ══ BOOT ════════════════════════════════════════ */
+function bootApp(){
+  // Initialise state
+  try{const s=JSON.parse(localStorage.getItem('lf_agt')||'{}');Object.assign(agtCfg,s);}catch(e){}
+  try{const s=JSON.parse(localStorage.getItem('lf_st_bypass')||'{}');Object.assign(stats,s);}catch(e){}
+  try{autLvl=localStorage.getItem('lf_aut')||'supervised';setAut(autLvl,true);}catch(e){}
+  loadAgt();
+  refreshHome();
+  renderPipe();
+  renderFU();
+  renderStats();
+  aLog('LeadFlow ready — '+leads.length+' leads in pipeline','ok');
+  setTimeout(updateSvcStatus,600);
+}
+
+/* ══ INIT ════════════════════════════════════════ */
+(async function(){
+  // AUTH BYPASS — direct access mode
+  user={id:'default',email:'mpofum@out.co.za',name:'Mpofuma',token:''};
+  document.getElementById('authWrap').style.display='none';
+  document.getElementById('appWrap').style.display='block';
+  await loadProfile();
+  await loadLeads();
+  bootApp();
+  if(!window._lf_tick) window._lf_tick=setInterval(tick,1000);
+  return;
+  // ORIGINAL AUTH BELOW (disabled)
+  (async function(){
+  // AUTO-BOOT: bypass login
+  user={id:'bypass',email:'mpofum@out.co.za',name:'Mpofuma',token:''};
+  document.getElementById('authWrap').style.display='none';
+  document.getElementById('appWrap').style.display='block';
+  if(!window._lf_tick) window._lf_tick=setInterval(tick,1000);
+  aLog('Loading pipeline...','lb');
+  try{await loadProfile();}catch(e){aLog('Profile: '+e.message,'w');}
+  try{await loadLeads();}catch(e){aLog('Leads: '+e.message,'w');}
+  bootApp();
+  goto('home');
+  return;
+  // original auth (disabled) ↓
+  try{
+    const s=JSON.parse(localStorage.getItem('lf_s')||'null');
+    if(s&&s.id&&s.email){
+      // Validate session is still alive before booting
+      const chk=await fetch('https://mtnqgnrcukombrklezhe.supabase.co/auth/v1/user',{headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ
