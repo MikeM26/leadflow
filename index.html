@@ -5,7 +5,6 @@
 <title>LeadFlow — Work Different.</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
 /* ── RESET ── */
 *{box-sizing:border-box;margin:0;padding:0}
@@ -27,7 +26,7 @@ a{color:#4F6EF7;text-decoration:none}
 }
 
 /* ── AUTH ── */
-#authWrap{display:flex;align-items:center;justify-content:center;min-height:100vh;
+#authWrap{display:none!important;align-items:center;justify-content:center;min-height:100vh;
   background:linear-gradient(135deg,#EEF2FF 0%,#F0F2F8 50%,#EDE9FE 100%)}
 .auth-card{background:var(--white);border-radius:20px;box-shadow:var(--sh-lg);padding:44px;width:100%;max-width:420px}
 .auth-logo-row{display:flex;align-items:center;gap:12px;margin-bottom:8px}
@@ -45,7 +44,7 @@ a{color:#4F6EF7;text-decoration:none}
 .auth-ok{background:#ECFDF5;border:1px solid #A7F3D0;border-radius:8px;padding:10px 13px;font-size:13px;color:var(--green);margin-bottom:14px;display:none}
 
 /* ── APP SHELL ── */
-#appWrap{display:none;min-height:100vh}
+#appWrap{display:block;min-height:100vh}
 .layout{display:flex;min-height:100vh}
 
 /* ── SIDEBAR ── */
@@ -344,6 +343,15 @@ textarea.fi{resize:vertical;min-height:88px;line-height:1.6}
 /* ── APPROVAL ── */
 .appr-item{background:#F8FAFC;border:1px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .15s}
 .appr-item:hover{border-color:var(--blue);background:var(--blue-s)}
+
+.svc-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.svc-row:last-child{border-bottom:none}
+.svc-dot{width:8px;height:8px;border-radius:50%;background:#E2E8F0;flex-shrink:0}
+.svc-dot.svc-ok{background:var(--green)}
+.svc-dot.svc-err{background:var(--red)}
+.svc-dot.svc-warn{background:var(--orange)}
+.svc-name{flex:1;color:var(--text)}
+.svc-val{font-size:12px;color:var(--sub)}
 </style>
 </head>
 <body>
@@ -356,7 +364,7 @@ textarea.fi{resize:vertical;min-height:88px;line-height:1.6}
     <div class="auth-brand"><span>Lead</span>Flow</div>
     <div class="auth-tagline-badge">Work Different.</div>
   </div>
-  <div class="auth-sub" style="margin-bottom:22px">Commercial Insurance AI Agent · mpofum@out.co.za</div>
+  <div class="auth-sub" style="margin-bottom:22px">Commercial Insurance AI Agent · <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="385548575e4d5578574d4c165b57164259">[email&#160;protected]</a></div>
   <div class="auth-tabs">
     <div class="auth-tab on" onclick="authTab('signin')">Sign In</div>
     <div class="auth-tab" onclick="authTab('signup')">Register</div>
@@ -401,50 +409,50 @@ textarea.fi{resize:vertical;min-height:88px;line-height:1.6}
     </div>
     <div class="sb-sec">Command</div>
     <button class="sb-item on" id="nav-home" onclick="goto('home')">
-      <span class="ico-wrap"><i data-lucide="layout-dashboard" style="width:16px;height:16px"></i></span>Command Centre
+      <span class="ico-wrap"></span>Command Centre
     </button>
     <button class="sb-item" id="nav-agent" onclick="goto('agent')">
-      <span class="ico-wrap"><i data-lucide="bot" style="width:16px;height:16px"></i></span>AI Agent
+      <span class="ico-wrap"></span>AI Agent
       <span class="sb-badge orange" id="agentBadge" style="display:none">0</span>
     </button>
     <button class="sb-item" id="nav-pipeline" onclick="goto('pipeline')">
-      <span class="ico-wrap"><i data-lucide="kanban" style="width:16px;height:16px"></i></span>Pipeline
+      <span class="ico-wrap"></span>Pipeline
       <span class="sb-badge blue" id="pipeBadge">0</span>
     </button>
     <button class="sb-item" id="nav-followups" onclick="goto('followups')">
-      <span class="ico-wrap"><i data-lucide="bell" style="width:16px;height:16px"></i></span>Follow-ups
+      <span class="ico-wrap"></span>Follow-ups
       <span class="sb-badge red" id="fuBadge" style="display:none">0</span>
     </button>
     <div class="sb-div"></div>
     <div class="sb-sec">Tools</div>
     <button class="sb-item" id="nav-import" onclick="goto('import')">
-      <span class="ico-wrap"><i data-lucide="upload" style="width:16px;height:16px"></i></span>Import Leads
+      <span class="ico-wrap"></span>Import Leads
       <span class="sb-badge green">Free</span>
     </button>
     <button class="sb-item" id="nav-email" onclick="goto('email')">
-      <span class="ico-wrap"><i data-lucide="mail" style="width:16px;height:16px"></i></span>Email Generator
+      <span class="ico-wrap"></span>Email Generator
     </button>
     <button class="sb-item" id="nav-search" onclick="goto('search')">
-      <span class="ico-wrap"><i data-lucide="search" style="width:16px;height:16px"></i></span>AI Search
+      <span class="ico-wrap"></span>AI Search
     </button>
     <button class="sb-item" id="nav-script" onclick="goto('script')">
-      <span class="ico-wrap"><i data-lucide="phone" style="width:16px;height:16px"></i></span>Call Script
+      <span class="ico-wrap"></span>Call Script
     </button>
     <button class="sb-item" id="nav-stats" onclick="goto('stats')">
-      <span class="ico-wrap"><i data-lucide="bar-chart-2" style="width:16px;height:16px"></i></span>Stats
+      <span class="ico-wrap"></span>Stats
     </button>
     <div class="sb-div"></div>
     <div class="sb-sec">Account</div>
     <button class="sb-item" id="nav-profile" onclick="goto('profile')">
-      <span class="ico-wrap"><i data-lucide="user" style="width:16px;height:16px"></i></span>Profile
+      <span class="ico-wrap"></span>Profile
     </button>
     <button class="sb-item" onclick="doSignOut()">
-      <span class="ico-wrap"><i data-lucide="log-out" style="width:16px;height:16px"></i></span>Sign Out
+      <span class="ico-wrap"></span>Sign Out
     </button>
     <div class="sb-user">
       <div class="sb-user-card">
         <div class="sb-av" id="userAv">M</div>
-        <div><div class="sb-un" id="userNm">Broker</div><div class="sb-ur">mpofum@out.co.za</div></div>
+        <div><div class="sb-un" id="userNm">Broker</div><div class="sb-ur"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="eb869b848d9e86ab849e9fc58884c5918a">[email&#160;protected]</a></div></div>
       </div>
     </div>
   </aside>
@@ -480,9 +488,6 @@ textarea.fi{resize:vertical;min-height:88px;line-height:1.6}
       <!-- METRICS (image ref style) -->
       <div class="metrics-row">
         <div class="metric-card" onclick="ripple(this);goto('pipeline')">
-          <div class="metric-icon green">
-            <i data-lucide="users" style="width:24px;height:24px"></i>
-          </div>
           <div class="metric-body">
             <div class="num" id="m-leads">0</div>
             <div class="lbl">Leads Mined</div>
@@ -490,9 +495,6 @@ textarea.fi{resize:vertical;min-height:88px;line-height:1.6}
           </div>
         </div>
         <div class="metric-card" onclick="ripple(this);goto('email')">
-          <div class="metric-icon orange">
-            <i data-lucide="send" style="width:24px;height:24px"></i>
-          </div>
           <div class="metric-body">
             <div class="num" id="m-emails">0</div>
             <div class="lbl">Emails Sent</div>
@@ -500,9 +502,6 @@ textarea.fi{resize:vertical;min-height:88px;line-height:1.6}
           </div>
         </div>
         <div class="metric-card" onclick="ripple(this)">
-          <div class="metric-icon purple">
-            <i data-lucide="calendar-check" style="width:24px;height:24px"></i>
-          </div>
           <div class="metric-body">
             <div class="num" id="m-mtg">0</div>
             <div class="lbl">Meetings Booked</div>
@@ -510,9 +509,6 @@ textarea.fi{resize:vertical;min-height:88px;line-height:1.6}
           </div>
         </div>
         <div class="metric-card" onclick="ripple(this)">
-          <div class="metric-icon cyan">
-            <i data-lucide="trending-up" style="width:24px;height:24px"></i>
-          </div>
           <div class="metric-body">
             <div class="num" id="m-pipe">R0</div>
             <div class="lbl">Revenue Pipeline</div>
@@ -536,21 +532,18 @@ textarea.fi{resize:vertical;min-height:88px;line-height:1.6}
       <div style="margin-top:18px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
         <div class="card" style="cursor:pointer;transition:all .2s" onclick="ripple(this);goto('import')" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='var(--sh-md)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
           <div style="width:44px;height:44px;border-radius:12px;background:var(--green);display:flex;align-items:center;justify-content:center;margin-bottom:10px;box-shadow:0 4px 12px rgba(16,185,129,.3)">
-            <i data-lucide="upload" style="width:20px;height:20px;color:#fff;stroke:#fff"></i>
           </div>
           <div style="font-size:14px;font-weight:700">Import Leads</div>
           <div style="font-size:12px;color:var(--sub);margin-top:3px">CSV, manual, or free directories</div>
         </div>
         <div class="card" style="cursor:pointer;transition:all .2s" onclick="ripple(this);goto('email')" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='var(--sh-md)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
           <div style="width:44px;height:44px;border-radius:12px;background:var(--orange);display:flex;align-items:center;justify-content:center;margin-bottom:10px;box-shadow:0 4px 12px rgba(245,158,11,.3)">
-            <i data-lucide="mail" style="width:20px;height:20px;color:#fff;stroke:#fff"></i>
           </div>
           <div style="font-size:14px;font-weight:700">Draft Email</div>
           <div style="font-size:12px;color:var(--sub);margin-top:3px">AI-written cold outreach</div>
         </div>
         <div class="card" style="cursor:pointer;transition:all .2s" onclick="ripple(this);goto('followups')" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='var(--sh-md)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
           <div style="width:44px;height:44px;border-radius:12px;background:var(--red);display:flex;align-items:center;justify-content:center;margin-bottom:10px;box-shadow:0 4px 12px rgba(239,68,68,.3)">
-            <i data-lucide="bell" style="width:20px;height:20px;color:#fff;stroke:#fff"></i>
           </div>
           <div style="font-size:14px;font-weight:700">Follow-ups</div>
           <div style="font-size:12px;color:var(--sub);margin-top:3px" id="qs-fu-lbl">Leads due for contact</div>
@@ -563,8 +556,7 @@ textarea.fi{resize:vertical;min-height:88px;line-height:1.6}
       <div class="crumb">LeadFlow / <span>AI Agent</span></div>
       <div class="pg-head">
         <div><div class="pg-title">AI Agent — The Executor</div><div class="pg-sub">The agent does the grind. You only close.</div></div>
-        <button class="btn btn-dark btn-sm" onclick="ripple(this);runBrief()">
-          <i data-lucide="refresh-cw" style="width:14px;height:14px"></i> Run Analysis
+        <button class="btn btn-dark btn-sm" onclick="ripple(this);runBrief()"> Run Analysis
         </button>
       </div>
 
@@ -586,12 +578,12 @@ textarea.fi{resize:vertical;min-height:88px;line-height:1.6}
       </div>
 
       <div class="mod-grid">
-        <div class="mod-card" onclick="ripple(this)"><div class="mod-ico"><i data-lucide="search" style="width:20px;height:20px;color:var(--blue)"></i></div><div class="mod-n">Discovery</div><div class="ms-g" id="mod-d">Ready</div></div>
-        <div class="mod-card" onclick="ripple(this)"><div class="mod-ico"><i data-lucide="shield-check" style="width:20px;height:20px;color:var(--green)"></i></div><div class="mod-n">Verification</div><div class="ms-g" id="mod-v">Ready</div></div>
-        <div class="mod-card" onclick="ripple(this)"><div class="mod-ico"><i data-lucide="star" style="width:20px;height:20px;color:var(--orange)"></i></div><div class="mod-n">Scoring</div><div class="ms-g" id="mod-s">Active</div></div>
-        <div class="mod-card" onclick="ripple(this)"><div class="mod-ico"><i data-lucide="send" style="width:20px;height:20px;color:var(--purple)"></i></div><div class="mod-n">Outreach</div><div class="ms-a" id="mod-o">Approval</div></div>
-        <div class="mod-card" onclick="ripple(this)"><div class="mod-ico"><i data-lucide="zap" style="width:20px;height:20px;color:var(--cyan)"></i></div><div class="mod-n">Nurture</div><div class="ms-g" id="mod-nu">Standby</div></div>
-        <div class="mod-card" onclick="ripple(this)"><div class="mod-ico"><i data-lucide="calendar" style="width:20px;height:20px;color:var(--green)"></i></div><div class="mod-n">Booking</div><div class="ms-g" id="mod-bk">Ready</div></div>
+        <div class="mod-card" onclick="ripple(this)"><div class="mod-ico"></div><div class="mod-n">Discovery</div><div class="ms-g" id="mod-d">Ready</div></div>
+        <div class="mod-card" onclick="ripple(this)"><div class="mod-ico"></div><div class="mod-n">Verification</div><div class="ms-g" id="mod-v">Ready</div></div>
+        <div class="mod-card" onclick="ripple(this)"><div class="mod-ico"></div><div class="mod-n">Scoring</div><div class="ms-g" id="mod-s">Active</div></div>
+        <div class="mod-card" onclick="ripple(this)"><div class="mod-ico"></div><div class="mod-n">Outreach</div><div class="ms-a" id="mod-o">Approval</div></div>
+        <div class="mod-card" onclick="ripple(this)"><div class="mod-ico"></div><div class="mod-n">Nurture</div><div class="ms-g" id="mod-nu">Standby</div></div>
+        <div class="mod-card" onclick="ripple(this)"><div class="mod-ico"></div><div class="mod-n">Booking</div><div class="ms-g" id="mod-bk">Ready</div></div>
       </div>
 
       <!-- Settings -->
@@ -600,7 +592,7 @@ textarea.fi{resize:vertical;min-height:88px;line-height:1.6}
         <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Powers AI search, email generation, reply classification. Get at console.anthropic.com</div>
         <div style="display:flex;gap:8px">
           <input type="password" class="fi" id="apiKeyInput" placeholder="sk-ant-api03-..." style="flex:1" oninput="saveKey()">
-          <button class="btn btn-s btn-sm" onclick="toggleKey()"><i data-lucide="eye" style="width:14px;height:14px"></i></button>
+          <button class="btn btn-s btn-sm" onclick="toggleKey()"></button>
         </div>
         <div id="apiKeyStatus" style="font-size:12px;margin-top:6px;color:var(--muted)"></div>
       </div>
@@ -650,8 +642,7 @@ textarea.fi{resize:vertical;min-height:88px;line-height:1.6}
             <option value="">All Status</option><option>Hot</option><option>Warm</option><option>Cold</option>
             <option>Contacted</option><option>Won</option><option>Lost</option><option>DNC</option>
           </select>
-          <button class="btn btn-p btn-sm" onclick="ripple(this);goto('import')">
-            <i data-lucide="plus" style="width:14px;height:14px"></i> Add Lead
+          <button class="btn btn-p btn-sm" onclick="ripple(this);goto('import')"> Add Lead
           </button>
         </div>
       </div>
@@ -698,8 +689,7 @@ textarea.fi{resize:vertical;min-height:88px;line-height:1.6}
           <div class="fg" style="margin:0"><label class="fl">City / Address</label><input class="fi" id="mAddr" placeholder="Sandton, Gauteng"></div>
           <div class="fg" style="margin:0"><label class="fl">Website</label><input class="fi" id="mWeb" placeholder="www.example.co.za"></div>
         </div>
-        <button class="btn btn-g" style="margin-top:14px" onclick="ripple(this);addManual()">
-          <i data-lucide="plus-circle" style="width:14px;height:14px"></i> Add to Pipeline
+        <button class="btn btn-g" style="margin-top:14px" onclick="ripple(this);addManual()"> Add to Pipeline
         </button>
       </div>
 
@@ -740,17 +730,16 @@ textarea.fi{resize:vertical;min-height:88px;line-height:1.6}
           <div class="fg"><label class="fl">Industry</label><input class="fi" id="eInd" placeholder="e.g. Construction"></div>
           <div class="fg"><label class="fl">City</label><input class="fi" id="eCity" placeholder="e.g. Johannesburg"></div>
           <div class="fg"><label class="fl">Known Pain / Risk</label><input class="fi" id="ePain" placeholder="e.g. fleet of 12 vehicles, uninsured drivers"></div>
-          <button class="btn btn-dark btn-full" id="eBtn" onclick="ripple(this);genEmail()">
-            <i data-lucide="zap" style="width:14px;height:14px"></i> Generate Email
+          <button class="btn btn-dark btn-full" id="eBtn" onclick="ripple(this);genEmail()"> Generate Email
           </button>
-          <div style="font-size:12px;color:var(--muted);margin-top:8px;text-align:center">Sender: mpofum@out.co.za</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:8px;text-align:center">Sender: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="620f120d04170f220d17164c010d4c1803">[email&#160;protected]</a></div>
         </div>
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
             <div class="card-hd" style="margin:0">Generated Email</div>
             <div style="display:flex;gap:6px">
-              <button class="btn btn-s btn-xs" onclick="ripple(this);copyEmail()"><i data-lucide="copy" style="width:12px;height:12px"></i> Copy</button>
-              <button class="btn btn-ghost btn-xs" onclick="ripple(this);openGmail()"><i data-lucide="external-link" style="width:12px;height:12px"></i> Gmail</button>
+              <button class="btn btn-s btn-xs" onclick="ripple(this);copyEmail()"> Copy</button>
+              <button class="btn btn-ghost btn-xs" onclick="ripple(this);openOutlook()"> Outlook</button>
             </div>
           </div>
           <textarea class="email-area" id="eOut" placeholder="Click Generate — your AI proposal will appear here.&#10;&#10;Even without an API key, a highly-personalised template is generated instantly."></textarea>
@@ -783,8 +772,7 @@ textarea.fi{resize:vertical;min-height:88px;line-height:1.6}
             </select>
           </div>
           <div><label class="fl">City</label><select class="fsel" id="srchCity"></select></div>
-          <button class="btn btn-p" id="srchBtn" onclick="ripple(this);doSearch()">
-            <i data-lucide="search" style="width:14px;height:14px"></i> Search
+          <button class="btn btn-p" id="srchBtn" onclick="ripple(this);doSearch()"> Search
           </button>
         </div>
       </div>
@@ -811,10 +799,10 @@ textarea.fi{resize:vertical;min-height:88px;line-height:1.6}
       <div class="crumb">LeadFlow / <span>Stats</span></div>
       <div class="pg-head"><div><div class="pg-title">My Stats</div></div></div>
       <div class="metrics-row">
-        <div class="metric-card"><div class="metric-icon green"><i data-lucide="users" style="width:22px;height:22px"></i></div><div class="metric-body"><div class="num" id="st-leads">0</div><div class="lbl">Total Leads</div></div></div>
-        <div class="metric-card"><div class="metric-icon orange"><i data-lucide="send" style="width:22px;height:22px"></i></div><div class="metric-body"><div class="num" id="st-emails">0</div><div class="lbl">Emails</div></div></div>
-        <div class="metric-card"><div class="metric-icon purple"><i data-lucide="phone" style="width:22px;height:22px"></i></div><div class="metric-body"><div class="num" id="st-calls">0</div><div class="lbl">Calls</div></div></div>
-        <div class="metric-card"><div class="metric-icon cyan"><i data-lucide="trophy" style="width:22px;height:22px"></i></div><div class="metric-body"><div class="num" id="st-won">0</div><div class="lbl">Won</div></div></div>
+        <div class="metric-card"><div class="metric-body"><div class="num" id="st-leads">0</div><div class="lbl">Total Leads</div></div></div>
+        <div class="metric-card"><div class="metric-body"><div class="num" id="st-emails">0</div><div class="lbl">Emails</div></div></div>
+        <div class="metric-card"><div class="metric-body"><div class="num" id="st-calls">0</div><div class="lbl">Calls</div></div></div>
+        <div class="metric-card"><div class="metric-body"><div class="num" id="st-won">0</div><div class="lbl">Won</div></div></div>
       </div>
       <div class="card"><div class="card-hd">Pipeline Breakdown</div><div id="statsBrk" style="margin-top:10px"></div></div>
     </div>
@@ -822,27 +810,39 @@ textarea.fi{resize:vertical;min-height:88px;line-height:1.6}
     <!-- ═══ PROFILE ═══ -->
     <div class="page" id="page-profile">
       <div class="crumb">LeadFlow / <span>Profile</span></div>
-      <div class="pg-head"><div><div class="pg-title">Profile</div><div class="pg-sub">Your details personalise every email and call</div></div></div>
+      <div class="pg-head"><div><div class="pg-title">Broker Profile</div><div class="pg-sub">Your details are injected automatically into every email, call script and proposal</div></div></div>
       <div class="prof-grid">
         <div class="card">
-          <div class="fg"><label class="fl">Full Name</label><input class="fi" id="profName" placeholder="Your name"></div>
-          <div class="fg"><label class="fl">Phone</label><input class="fi" id="profPhone" placeholder="082 555 1234"></div>
-          <div class="fg"><label class="fl">Branch / Area</label><input class="fi" id="profBranch" placeholder="e.g. Sandton"></div>
-          <div class="fg"><label class="fl">Work Email</label><input class="fi" id="profEmail" value="mpofum@out.co.za" placeholder="mpofum@out.co.za"></div>
+          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--sub);margin-bottom:14px">Personal Details</div>
+          <div class="fg"><label class="fl">Full Name</label><input class="fi" id="profName" placeholder="Mpofuma"></div>
+          <div class="fg"><label class="fl">Phone Number</label><input class="fi" id="profPhone" placeholder="082 555 1234"></div>
+          <div class="fg"><label class="fl">Work Email</label><input class="fi" id="profEmail" placeholder="mpofum@out.co.za"></div>
+          <div class="fg"><label class="fl">Province / Service Area</label><input class="fi" id="profBranch" placeholder="e.g. Gauteng — Sandton, Midrand, Pretoria"></div>
+          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--sub);margin:20px 0 14px">Brokerage Details</div>
+          <div class="fg"><label class="fl">Brokerage / Company Name</label><input class="fi" id="profCompany" placeholder="OUTsurance"></div>
+          <div class="fg"><label class="fl">FSP / Licence Number</label><input class="fi" id="profFsp" placeholder="FSP 12345"></div>
+          <div class="fg"><label class="fl">Insurance Focus Areas</label><input class="fi" id="profFocus" placeholder="e.g. Fleet, Liability, Goods-in-Transit, Engineering Works"></div>
+          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--sub);margin:20px 0 14px">Automation</div>
           <div class="fg"><label class="fl">Calendly / Booking Link</label><input class="fi" id="profCal" placeholder="https://calendly.com/mpofum/30min"></div>
+          <div class="fg"><label class="fl">Email Signature</label><textarea class="fi" id="profSig" rows="4" placeholder="Mpofuma&#10;Commercial Insurance Specialist&#10;OUTsurance | FSP 12345&#10;mpofum@out.co.za | 082 555 1234"></textarea></div>
           <div class="fg"><label class="fl">n8n Webhook URL</label><input class="fi" id="profN8n" placeholder="https://leadflow7.app.n8n.cloud/webhook/leadflow-mine"></div>
-          <button class="btn btn-p btn-full" onclick="ripple(this);saveProfile()">Save Profile</button>
+          <div class="fg"><label class="fl">Brevo API Key</label><input class="fi" id="profBrevo" placeholder="xsmtpsib-..."></div>
+          <button class="btn btn-p" style="margin-top:8px" onclick="ripple(this);saveProfile()">Save Profile</button>
         </div>
-        <div class="card">
-          <div class="card-hd">Deployment</div>
-          <div class="card-sd" style="margin-bottom:14px">Your live LeadFlow links</div>
-          <a class="btn btn-dark btn-full" href="https://leadflow-lovat.vercel.app" target="_blank" style="display:flex;margin-bottom:8px">Live Site (Vercel) ↗</a>
-          <a class="btn btn-s btn-full" href="https://github.com/MikeM26/leadflow" target="_blank" style="display:flex;margin-bottom:8px">
-            <i data-lucide="github" style="width:14px;height:14px"></i> GitHub Repo ↗
-          </a>
-          <a class="btn btn-s btn-full" href="https://supabase.com/dashboard/project/mtnqgnrcukombrklezhe" target="_blank" style="display:flex">Supabase ↗</a>
-          <div style="margin-top:16px;background:#F0FFF4;border:1px solid #A7F3D0;border-radius:var(--r);padding:13px;font-size:12px;color:#065F46" id="n8nStatusBox">
-            <strong>n8n Agent:</strong> Paste your webhook URL in the form on the left and click <strong>Save Profile</strong> to connect.
+        <div>
+          <div class="card" style="margin-bottom:16px">
+            <div style="font-size:13px;font-weight:700;margin-bottom:14px">System Status</div>
+            <div class="svc-row"><span class="svc-dot" id="svcDbDot"></span><span class="svc-name">Database</span><span class="svc-val" id="svcDbVal">Checking...</span></div>
+            <div class="svc-row"><span class="svc-dot" id="svcEmailDot"></span><span class="svc-name">Email Engine (Brevo)</span><span class="svc-val" id="svcEmailVal">Not configured</span></div>
+            <div class="svc-row"><span class="svc-dot" id="svcAgentDot"></span><span class="svc-name">n8n Agent</span><span class="svc-val" id="svcAgentVal">Not configured</span></div>
+            <div class="svc-row"><span class="svc-dot svc-ok"></span><span class="svc-name">AI Engine (Groq)</span><span class="svc-val" style="color:var(--green)">Free — Active</span></div>
+            <div style="font-size:11px;color:var(--sub);margin-top:14px;padding-top:10px;border-top:1px solid var(--border)">Last successful run: <span id="svcLastRun">Never</span></div>
+          </div>
+          <div class="card" id="n8nStatusBox">
+            <div style="font-size:13px;font-weight:700;margin-bottom:12px">Deployment</div>
+            <a href="https://leadflow-lovat.vercel.app" target="_blank" class="btn btn-dark btn-full" style="margin-bottom:8px;text-decoration:none;display:block;text-align:center">Live Site (Vercel)</a>
+            <a href="https://github.com/MikeM26/leadflow" target="_blank" class="btn btn-ghost btn-full" style="margin-bottom:8px;text-decoration:none;display:block;text-align:center">GitHub Repo</a>
+            <a href="https://supabase.com/dashboard/project/mtnqgnrcukombrklezhe" target="_blank" class="btn btn-ghost btn-full" style="text-decoration:none;display:block;text-align:center">Supabase</a>
           </div>
         </div>
       </div>
@@ -889,7 +889,7 @@ textarea.fi{resize:vertical;min-height:88px;line-height:1.6}
 
 <div class="toast" id="toast"></div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 /* ══ CONFIG ══════════════════════════════════════ */
 const SB='https://mtnqgnrcukombrklezhe.supabase.co';
 const SK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10bnFnbnJjdWtvbWJya2xlemhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NzY1NzQsImV4cCI6MjA4NzQ1MjU3NH0.Y_RBIjB1N_SEwNaLVg85R5wIRkXY199AiGRdqCzGhz8';
@@ -965,12 +965,12 @@ async function boot(){
   if(agtCfg.brief)setTimeout(runBrief,1400);
   aLog('LeadFlow agent ready · '+leads.length+' leads in pipeline','ok');
   goto('home');
-  setTimeout(()=>{lucide.createIcons();},100);
+  setTimeout(()=>{},100);
 }
 
 async function loadLeads(){
   try{
-    const d=await db('leads?user_id=eq.'+user.id+'&order=created_at.desc');
+    const d=await db('leads?order=created_at.desc&limit=200');
     leads=d||[];
     // Rebuild addedIds from DB — single source of truth
     addedIds=new Set(leads.map(l=>l.source_id).filter(Boolean));
@@ -979,9 +979,10 @@ async function loadLeads(){
 }
 
 async function loadProfile(){
-  try{const d=await db('profiles?user_id=eq.'+user.id);if(d&&d.length){profile=d[0];['Name','Phone','Branch','Email'].forEach(k=>{const el=document.getElementById('prof'+k);if(el)el.value=profile[k.toLowerCase()]||'';});const cal=document.getElementById('profCal');if(cal&&profile.calendly)cal.value=profile.calendly;
+  try{const d=await db('profiles?limit=1');if(d&&d.length){profile=d[0];const fmap={Name:'name',Phone:'phone',Branch:'branch',Email:'email',Company:'company',Fsp:'fsp',Focus:'focus',Cal:'calendly',Sig:'signature',N8n:'n8n_webhook',Brevo:'brevo_key'};Object.entries(fmap).forEach(([id,key])=>{const el=document.getElementById('prof'+id);if(el&&profile[key])el.value=profile[key];});
     const n8nInp=document.getElementById('profN8n');
     const savedN8n=profile.n8n_webhook||(()=>{try{return localStorage.getItem('lf_n8n')||'';}catch(e){return '';}})();
+  const savedBrevo=profile.brevo_key||(()=>{try{return localStorage.getItem('lf_brevo_key')||'';}catch(e){return '';}})();
     if(n8nInp&&savedN8n)n8nInp.value=savedN8n;
     profile.n8n_webhook=savedN8n;
     const nb=document.getElementById('n8nStatusBox');if(nb&&savedN8n){nb.innerHTML='<strong style="color:#065F46">n8n Agent Connected</strong> — <code style="font-size:11px">'+savedN8n.replace('https://','')+'</code>';}
@@ -989,14 +990,17 @@ async function loadProfile(){
 }
 
 async function saveProfile(){
-  profile.name=document.getElementById('profName').value;
-  profile.phone=document.getElementById('profPhone').value;
-  profile.branch=document.getElementById('profBranch').value;
-  profile.email=document.getElementById('profEmail').value;
-  profile.calendly=document.getElementById('profCal').value;
-  profile.n8n_webhook=document.getElementById('profN8n').value.trim();
+  const g=id=>document.getElementById(id)?.value||'';
+  profile.name=g('profName');profile.phone=g('profPhone');
+  profile.branch=g('profBranch');profile.email=g('profEmail');
+  profile.company=g('profCompany');profile.fsp=g('profFsp');
+  profile.focus=g('profFocus');profile.calendly=g('profCal');
+  profile.signature=g('profSig');
+  profile.n8n_webhook=g('profN8n').trim();
+  profile.brevo_key=g('profBrevo').trim();
+  try{localStorage.setItem('lf_brevo_key',profile.brevo_key);}catch(e){}
   try{localStorage.setItem('lf_n8n',profile.n8n_webhook);}catch(e){}
-  const nb=document.getElementById('n8nStatusBox');if(nb&&profile.n8n_webhook){nb.innerHTML='<strong style="color:#065F46">n8n Agent Connected</strong> — webhook saved. Agent will call <code style="font-size:11px">'+profile.n8n_webhook.replace('https://','')+'</code> to find leads.';}
+  updateSvcStatus();  const nb=document.getElementById('n8nStatusBox');if(nb&&profile.n8n_webhook){nb.innerHTML='<strong style="color:#065F46">n8n Agent Connected</strong> — webhook saved. Agent will call <code style="font-size:11px">'+profile.n8n_webhook.replace('https://','')+'</code> to find leads.';}
   try{const ex=await db('profiles?user_id=eq.'+user.id);if(ex&&ex.length)await db('profiles?user_id=eq.'+user.id,{method:'PATCH',body:JSON.stringify(profile)});else await db('profiles',{method:'POST',body:JSON.stringify({...profile,user_id:user.id})});toast('Profile saved ✓');}catch(e){toast('Save error');}
 }
 
@@ -1055,10 +1059,9 @@ function showPrev(rows){
       <div style="font-size:13px;font-weight:700;color:#065F46">✅ ${rows.length} leads ready</div>
       <div style="font-size:12px;color:var(--sub);margin-top:5px">${rows.slice(0,3).map(r=>`• ${esc(r.company)}${r.phone?' · '+esc(r.phone):''}${r.industry?' · '+esc(r.industry):''}`).join('<br>')}</div>
     </div>
-    <button class="btn btn-g" onclick="ripple(this);doImport(window._csvRows)">
-      <i data-lucide="upload" style="width:14px;height:14px"></i> Import All ${rows.length} Leads
+    <button class="btn btn-g" onclick="ripple(this);doImport(window._csvRows)"> Import All ${rows.length} Leads
     </button>`;
-  lucide.createIcons();
+  
 }
 
 async function doImport(rows){
@@ -1087,12 +1090,22 @@ async function doImport(rows){
       const res=await db('leads',{method:'POST',body:JSON.stringify(lead)});
       const sv=Array.isArray(res)?res[0]:res;
       if(sv&&sv.id){leads.unshift(sv);addedIds.add(slug);added++;}
-      else{skip++;} // duplicate ignored by DB
-    }catch(e){errs++;aLog('Import err: '+e.message,'w');}
+      else if(Array.isArray(res)&&res.length===0){skip++;} // ignored duplicate
+      else{leads.unshift(lead);addedIds.add(slug);added++;} // fallback if no id returned
+    }catch(e){
+      // Try without source_id constraint — strip and retry
+      try{
+        const lead2={...lead,source_id:slug+'_'+Date.now()};
+        const res2=await db('leads',{method:'POST',body:JSON.stringify(lead2)});
+        const sv2=Array.isArray(res2)?res2[0]:res2;
+        if(sv2){leads.unshift(sv2);addedIds.add(slug);added++;}else{errs++;aLog('Err: '+e.message,'w');}
+      }catch(e2){errs++;aLog('Import err: '+row.company+' — '+e2.message,'w');}
+    }
   }
   document.getElementById('pipeBadge').textContent=leads.length;
-  const msg=`Import done: ${added} added${skip?' · '+skip+' skipped':''}${errs?' · '+errs+' errors':''}`;
-  document.getElementById('importPrev').innerHTML=`<div style="background:#ECFDF5;border:1px solid #A7F3D0;border-radius:var(--r);padding:14px;font-size:13px;font-weight:700;color:#065F46">${msg}</div>`;
+  const errColor=errs>0?'#FEF2F2':'#ECFDF5';const errBorder=errs>0?'#FECACA':'#A7F3D0';const errText=errs>0?'var(--red)':'#065F46';
+  const msg=`Import done: ${added} added${skip?' · '+skip+' skipped':''}${errs?' · '+errs+' errors — check Agent Log':''}`;
+  document.getElementById('importPrev').innerHTML=`<div style="background:${errColor};border:1px solid ${errBorder};border-radius:var(--r);padding:14px;font-size:13px;font-weight:700;color:${errText}">${msg}</div>`;
   addAct('CSV Import: '+added+' leads added','b');
   aLog('CSV: '+added+' added, '+skip+' skipped, '+errs+' errors','ok');
   toast(added>0?added+' leads imported':'No new leads — already in pipeline');
@@ -1123,7 +1136,7 @@ function doSearch(){
   const ind=document.getElementById('srchInd').value,city=document.getElementById('srchCity').value||'Johannesburg',prov=document.getElementById('srchProv').value||'Gauteng';
   let key='';try{key=(localStorage.getItem('lf_k')||'').trim();}catch(e){}
   if(!key||key.length<20){document.getElementById('srchRes').innerHTML=`<div class="key-box"><div style="font-size:36px;margin-bottom:10px"></div><h3>API Key Required</h3><p>AI search uses Claude AI (~R0.02 per search).<br>Or use <strong>Import Leads</strong> — completely free.</p><div class="key-row"><input type="password" class="fi" id="inlineKey" placeholder="sk-ant-api03-..." style="flex:1"><button class="btn btn-p" onclick="saveInlineKey()">Unlock</button></div><div style="margin-top:12px"><button class="btn btn-g" onclick="goto('import')">Free Import Instead →</button></div></div>`;return;}
-  const btn=document.getElementById('srchBtn');btn.disabled=true;btn.innerHTML='<i data-lucide="loader" style="width:14px;height:14px;animation:spin .7s linear infinite"></i> Searching...';lucide.createIcons();
+  const btn=document.getElementById('srchBtn');btn.disabled=true;btn.innerHTML=' Searching...';
   document.getElementById('srchRes').innerHTML=`<div class="card"><div style="text-align:center;padding:50px 20px"><div class="spinner"></div><div style="font-size:14px;font-weight:600;margin-bottom:4px">AI scanning ${ind} businesses in ${city}...</div><div style="font-size:12px;color:var(--sub)">Google Maps · Yellow Pages · LinkedIn · Brabys · CIPC</div><div class="dbg" id="dbg"></div></div></div>`;
   runAI(key,ind,city,prov);
 }
@@ -1136,27 +1149,27 @@ async function runAI(key,ind,city,prov){
   const prompt=`List 10 real ${ind} businesses located in ${city}, ${prov}, South Africa. Return ONLY a JSON array, no markdown. Each: {"name":"","address":"","phone":"","contact":"","industry":"${ind}","website":"","source":"knowledge","confidence":75,"source_id":"slug"}. Real businesses only.`;
   try{
     sLog('Calling Anthropic API...');
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:2000,messages:[{role:'user',content:prompt}]})});
+    const r=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:2000,messages:[{role:'user',content:prompt}]})});
     const d=await r.json();sLog('Status: '+(d.error?'ERROR '+d.error.type:'OK'));
     if(d.error){
       if(d.error.type==='authentication_error'){try{localStorage.removeItem('lf_k');}catch(e){}showSrchErr('API key invalid.',true);}
       else if(d.error.message&&(d.error.message.includes('credit')||d.error.message.includes('balance')))showSrchErr('No credits. Add $5 at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> → Billing.',false);
       else showSrchErr('API error: '+d.error.message,false);
-      btn.disabled=false;btn.innerHTML='<i data-lucide="search" style="width:14px;height:14px"></i> Search';lucide.createIcons();return;
+      btn.disabled=false;btn.innerHTML=' Search';return;
     }
     const text=(d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
     const clean=text.replace(/```json/gi,'').replace(/```/g,'').trim();
     const a1=clean.indexOf('['),a2=clean.lastIndexOf(']');
-    if(a1===-1){showSrchErr('No results returned. Try a different city.',false);btn.disabled=false;btn.innerHTML='<i data-lucide="search" style="width:14px;height:14px"></i> Search';lucide.createIcons();return;}
+    if(a1===-1){showSrchErr('No results returned. Try a different city.',false);btn.disabled=false;btn.innerHTML=' Search';return;}
     const biz=JSON.parse(clean.slice(a1,a2+1));
     const fresh=biz.filter(b=>{if(!b.name||b.name.length<2)return false;const nm=b.name.toLowerCase();const slug=nm.replace(/[^a-z0-9]+/g,'-')+'-'+city.toLowerCase().replace(/\s/g,'-');return !pipeNms.includes(nm)&&!addedIds.has(slug);});
     sLog('Found '+fresh.length+' new leads');
     renderSrch(fresh,ind,city);
-  }catch(e){sLog('Error: '+e.message);showSrchErr('Search failed: '+e.message,false);btn.disabled=false;btn.innerHTML='<i data-lucide="search" style="width:14px;height:14px"></i> Search';lucide.createIcons();}
+  }catch(e){sLog('Error: '+e.message);showSrchErr('Search failed: '+e.message,false);btn.disabled=false;btn.innerHTML=' Search';}
 }
 
 function renderSrch(biz,ind,city){
-  const btn=document.getElementById('srchBtn');btn.disabled=false;btn.innerHTML='<i data-lucide="search" style="width:14px;height:14px"></i> Search';lucide.createIcons();
+  const btn=document.getElementById('srchBtn');btn.disabled=false;btn.innerHTML=' Search';
   if(!biz.length){document.getElementById('srchRes').innerHTML=`<div class="card"><div class="empty"><div class="empty-ico"></div><div>No new leads for ${ind} in ${city}</div></div></div>`;return;}
   aLog('Found '+biz.length+' leads: '+ind+' · '+city,'ok');
   document.getElementById('srchRes').innerHTML=`<div style="font-size:13px;color:var(--sub);margin-bottom:10px">${biz.length} real businesses · ${ind} · ${city}</div>`
@@ -1206,12 +1219,12 @@ async function genEmail(){
   const pain=document.getElementById('ePain').value.trim();
   if(!co){toast('Enter company name');return;}
   const broker=profile.name||'Mpofuma',branch=profile.branch||'Outsurance',ph=profile.phone||'';
-  const btn=document.getElementById('eBtn');btn.disabled=true;btn.innerHTML='<i data-lucide="loader" style="width:14px;height:14px;animation:spin .7s linear infinite"></i> Generating...';lucide.createIcons();
+  const btn=document.getElementById('eBtn');btn.disabled=true;btn.innerHTML=' Generating...';
   let key='';try{key=(localStorage.getItem('lf_k')||'').trim();}catch(e){}
   const fallback=buildEmail(co,ct,ind,city,pain,broker,branch,ph);
-  if(!key||key.length<20){document.getElementById('eOut').value=fallback;btn.disabled=false;btn.innerHTML='<i data-lucide="zap" style="width:14px;height:14px"></i> Generate Email';lucide.createIcons();toast('Template ready — add API key for AI version');stats.emails++;saveSt();return;}
+  if(!key||key.length<20){document.getElementById('eOut').value=fallback;btn.disabled=false;btn.innerHTML=' Generate Email';toast('Template ready — add API key for AI version');stats.emails++;saveSt();return;}
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-3-5-sonnet-20241022',max_tokens:800,messages:[{role:'user',content:`You are a 200 IQ commercial insurance broker writing a cold outreach email. Be intelligent, human, and specific — not generic. Never say "I hope this email finds you well."
+    const r=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'meta-llama/llama-3.3-70b-instruct:free',max_tokens:350,messages:[{role:'user',content:`You are a 200 IQ commercial insurance broker writing a cold outreach email. Be intelligent, human, and specific — not generic. Never say "I hope this email finds you well."
 
 Write a cold email FROM mpofum@out.co.za TO ${co} (${ct||'the owner'}).
 Industry: ${ind||'commercial business'} in ${city||'Johannesburg, SA'}.
@@ -1229,18 +1242,51 @@ Sent from: mpofum@out.co.za`}]})});
     if(d.error||!d.content)throw new Error(d.error?.message||'No response');
     document.getElementById('eOut').value=(d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('').trim();
   }catch(err){document.getElementById('eOut').value=fallback;toast('Using template ('+err.message+')');}
-  btn.disabled=false;btn.innerHTML='<i data-lucide="zap" style="width:14px;height:14px"></i> Generate Email';lucide.createIcons();
+  btn.disabled=false;btn.innerHTML=' Generate Email';
   stats.emails++;saveSt();addAct('Email drafted: '+co,'b');
 }
 
 function buildEmail(co,ct,ind,city,pain,broker,branch,ph){
   const riskMap={'Construction':'site liability, plant & equipment, contractor all-risks, and SASRIA cover','Transport & Logistics':'fleet exposure, cargo liability, and driver risk','Manufacturing':'machinery breakdown, fire, product liability, and business interruption','Hospitality & Restaurants':'liquor liability, fire risk, equipment breakdown, and public liability','Healthcare & Medical':'professional indemnity, medical malpractice, and cyber liability','Real Estate & Property':'property damage, landlord liability, and rental income protection','Mining':'environmental liability, mining equipment, and employee compensation','Solar & Renewable Energy':'installation risk, product liability, and panel replacement cover'};
   const risk=riskMap[ind]||'commercial risk exposure, property damage, and liability gaps';
-  return `Subject: ${co} — Are you fully covered for ${ind} risks in ${city}?\n\nGood day ${ct||'there'},\n\nI came across ${co} while researching ${ind} businesses in ${city}. Having reviewed dozens of similar operations this year, I've noticed a consistent pattern: most ${ind} businesses are carrying significant uninsured risk — particularly around ${risk}.\n\nI want to be direct: I'm not here to sell you something you don't need. I'm here because a 15-minute review with me has saved ${ind} businesses in ${city||'South Africa'} between 15–35% on premiums — while closing the gaps that matter.\n\n${pain?`One specific concern for operations like yours: ${pain}. This is exactly the kind of risk that looks covered until there's a claim — and then it isn't.\n\n`:''}I'd like to offer ${co} a complimentary policy review. No obligation. No pressure. Just clarity on where you stand.\n\nCan I book 15 minutes with you this week?\n\nKind regards,\n${broker}\nCommercial Insurance Specialist\nOutsurance — ${branch||'SA'}\n${ph}\n📧 mpofum@out.co.za`;
+  return `Subject: ${co} — Quick insurance question\n\nGood day ${ct||'there'},\n\nI work with ${ind||'commercial'} businesses in ${city||'SA'} and most are either overpaying or underinsured around ${risk}.${pain?' In your case: '+pain+'.':''}\n\nFree 15-minute policy review — no obligation. Worth it?\n\n${broker}\nOutsurance | ${ph} | mpofum@out.co.za`;
 }
 
 function copyEmail(){navigator.clipboard.writeText(document.getElementById('eOut').value).then(()=>toast('Copied to clipboard'));}
-function openGmail(){const txt=document.getElementById('eOut').value;const m=txt.match(/^Subject:\s*(.+)/m);const s=m?m[1]:'Insurance Review';const b=txt.replace(/^Subject:[^\n]*/m,'').trim();window.open('https://mail.google.com/mail/?view=cm&su='+encodeURIComponent(s)+'&body='+encodeURIComponent(b),'_blank');}
+function openOutlook(){const txt=document.getElementById('eOut').value;const m=txt.match(/^Subject:\s*(.+)/m);const s=m?m[1].trim():'Insurance Review';const b=txt.replace(/^Subject:[^\n]*/m,'').trim();window.open('https://outlook.office.com/mail/deeplink/compose?subject='+encodeURIComponent(s)+'&body='+encodeURIComponent(b),'_blank');}
+
+async function sendViaBrevo(toEmail,toName,subject,body){
+  const bk=profile.brevo_key||localStorage.getItem('lf_brevo_key')||'';
+  if(!bk)return false;
+  try{
+    const r=await fetch('https://api.brevo.com/v3/smtp/email',{
+      method:'POST',
+      headers:{'api-key':bk,'Content-Type':'application/json'},
+      body:JSON.stringify({sender:{name:profile.name||'Mpofuma',email:'mpofum@out.co.za'},to:[{email:toEmail,name:toName||toEmail}],replyTo:{email:'mpofum@out.co.za'},subject,textContent:body})
+    });
+    const d=await r.json();
+    if(d.messageId){aLog('Sent to '+toEmail+' ✓','s');return true;}
+    aLog('Brevo: '+(d.message||'send failed'),'w');return false;
+  }catch(e){aLog('Brevo error: '+e.message,'w');return false;}
+}
+
+async function autoFollowup(){
+  const today=new Date().toISOString().split('T')[0];
+  const overdue=leads.filter(l=>l.followup&&l.followup<=today&&l.status!=='Won'&&l.status!=='Closed');
+  if(!overdue.length)return;
+  aLog('Auto follow-up: '+overdue.length+' overdue leads','i');
+  for(const lead of overdue){
+    if(!lead.email||!profile.brevo_key)continue;
+    const subj='Following up — '+lead.company+' insurance review';
+    const body='Good day '+(lead.contact||'there')+',\n\nI reached out recently about a complimentary insurance review for '+lead.company+'.\n\nHave you had a chance to consider it? A 15-minute conversation could uncover significant savings or coverage gaps.\n\nAvailable this week?\n\n'+(profile.name||'Mpofuma')+'\nOutsurance | mpofum@out.co.za';
+    const sent=await sendViaBrevo(lead.email,lead.contact||lead.company,subj,body);
+    if(sent){
+      const newFu=new Date(Date.now()+3*86400000).toISOString().split('T')[0];
+      await db('leads?id=eq.'+lead.id,{method:'PATCH',body:JSON.stringify({followup:newFu,notes:(lead.notes||'')+' | AutoFU:'+today})});
+      lead.followup=newFu;
+    }
+  }
+}
 
 async function draftEm(lead){
   const body=buildEmail(lead.company,lead.contact,lead.industry,lead.address,'',profile.name||'Mpofuma',profile.branch||'Outsurance',profile.phone||'');
@@ -1259,7 +1305,7 @@ function renderPipe(){
     if(l.followup){const fd=new Date(l.followup);fd.setHours(0,0,0,0);const diff=Math.floor((fd-today)/86400000);const cls=diff<0?'fu-over':diff===0?'fu-now':'fu-soon';const lbl=diff<0?`Overdue ${Math.abs(diff)}d`:diff===0?'Due today':`In ${diff}d`;fuH=`<div class="fu-chip ${cls}">${lbl}</div>`;}
     const stC={'Hot':'b-hot','Warm':'b-warm','Cold':'b-cold','Contacted':'b-cont','Won':'b-won','Lost':'b-lost','DNC':'b-dnc'}[l.status]||'b-cold';
     const pips=Array.from({length:5},(_,j)=>`<div class="pip ${j<(l.score||1)?'on':''}"></div>`).join('');
-    return `<div class="pipe-card" onclick="openLead('${l.id}')"><div class="pc-top"><div class="pc-name">${esc(l.company||'')}</div><span class="badge ${stC}">${l.status||'Cold'}</span></div><div class="pc-meta">${l.industry?`<div>${esc(l.industry)}</div>`:''}${l.address?`<div>${esc(l.address)}</div>`:''}${l.phone?`<div>${esc(l.phone)}</div>`:''}${l.contact?`<div>${esc(l.contact)}</div>`:''}</div><div style="display:flex;gap:3px;margin-bottom:8px">${pips}</div>${fuH}<div class="pc-btns" onclick="event.stopPropagation()">${l.phone?`<button class="btn btn-s btn-xs" onclick="window.open('tel:${esc(l.phone)}')"><i data-lucide="phone" style="width:11px;height:11px"></i></button>`:''}<button class="btn btn-ghost btn-xs" onclick="prefillEmail('${l.id}')"><i data-lucide="mail" style="width:11px;height:11px"></i></button></div></div>`;
+    return `<div class="pipe-card" onclick="openLead('${l.id}')"><div class="pc-top"><div class="pc-name">${esc(l.company||'')}</div><span class="badge ${stC}">${l.status||'Cold'}</span></div><div class="pc-meta">${l.industry?`<div>${esc(l.industry)}</div>`:''}${l.address?`<div>${esc(l.address)}</div>`:''}${l.phone?`<div>${esc(l.phone)}</div>`:''}${l.contact?`<div>${esc(l.contact)}</div>`:''}</div><div style="display:flex;gap:3px;margin-bottom:8px">${pips}</div>${fuH}<div class="pc-btns" onclick="event.stopPropagation()">${l.phone?`<button class="btn btn-s btn-xs" onclick="window.open('tel:${esc(l.phone)}')"></button>`:''}<button class="btn btn-ghost btn-xs" onclick="prefillEmail('${l.id}')"></button></div></div>`;
   }).join('');
   setTimeout(()=>lucide.createIcons(),50);
 }
@@ -1281,7 +1327,7 @@ function renderFU(){
   el.innerHTML=due.map(l=>{
     const fd=new Date(l.followup);fd.setHours(0,0,0,0);const diff=Math.floor((fd-today)/86400000);
     const col=diff<0?'var(--red)':'var(--orange)';const lbl=diff<0?`${Math.abs(diff)}d overdue`:'Today';
-    return `<div class="fu-row"><div class="fu-bar" style="background:${col}"></div><div style="flex:1"><div style="font-size:14px;font-weight:700">${esc(l.company||'')}</div><div style="font-size:12px;color:var(--sub);margin-top:2px">${esc(l.industry||'')} · ${lbl} · ${esc(l.followup||'')}</div></div><div style="display:flex;gap:6px">${l.phone?`<button class="btn btn-s btn-xs" onclick="window.open('tel:${esc(l.phone)}')"><i data-lucide="phone" style="width:11px;height:11px"></i></button>`:''}<button class="btn btn-ghost btn-xs" onclick="prefillEmail('${l.id}')"><i data-lucide="mail" style="width:11px;height:11px"></i></button><button class="btn btn-s btn-xs" onclick="openLead('${l.id}')">Update</button></div></div>`;
+    return `<div class="fu-row"><div class="fu-bar" style="background:${col}"></div><div style="flex:1"><div style="font-size:14px;font-weight:700">${esc(l.company||'')}</div><div style="font-size:12px;color:var(--sub);margin-top:2px">${esc(l.industry||'')} · ${lbl} · ${esc(l.followup||'')}</div></div><div style="display:flex;gap:6px">${l.phone?`<button class="btn btn-s btn-xs" onclick="window.open('tel:${esc(l.phone)}')"></button>`:''}<button class="btn btn-ghost btn-xs" onclick="prefillEmail('${l.id}')"></button><button class="btn btn-s btn-xs" onclick="openLead('${l.id}')">Update</button></div></div>`;
   }).join('');
   setTimeout(()=>lucide.createIcons(),50);
 }
@@ -1381,20 +1427,65 @@ function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 function tick(){const n=new Date();document.getElementById('clockEl').textContent=n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0')+':'+n.getSeconds().toString().padStart(2,'0');}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3100);}
 
+
+
+function updateSvcStatus(){
+  const dbDot=document.getElementById('svcDbDot'),dbVal=document.getElementById('svcDbVal');
+  if(dbDot){dbDot.className='svc-dot svc-ok';}
+  if(dbVal){dbVal.textContent=leads.length+' leads — Connected';dbVal.style.color='var(--green)';}
+  const eDot=document.getElementById('svcEmailDot'),eVal=document.getElementById('svcEmailVal');
+  const hasBrevo=!!(profile.brevo_key&&profile.brevo_key.length>10);
+  if(eDot)eDot.className='svc-dot '+(hasBrevo?'svc-ok':'svc-err');
+  if(eVal){eVal.textContent=hasBrevo?'Brevo — Connected':'Add Brevo API key';eVal.style.color=hasBrevo?'var(--green)':'var(--red)';}
+  const nDot=document.getElementById('svcAgentDot'),nVal=document.getElementById('svcAgentVal');
+  const hasN8n=!!(profile.n8n_webhook&&profile.n8n_webhook.includes('n8n'));
+  if(nDot)nDot.className='svc-dot '+(hasN8n?'svc-ok':'svc-warn');
+  if(nVal){nVal.textContent=hasN8n?'n8n — Webhook live':'Add n8n webhook URL';nVal.style.color=hasN8n?'var(--green)':'var(--orange)';}
+  const lr=document.getElementById('svcLastRun');
+  try{const t=localStorage.getItem('lf_last_run');if(lr)lr.textContent=t||'Never';}catch(e){}
+}
+/* ══ BOOT ════════════════════════════════════════ */
+function bootApp(){
+  // Initialise state
+  try{const s=JSON.parse(localStorage.getItem('lf_agt')||'{}');Object.assign(agtCfg,s);}catch(e){}
+  try{const s=JSON.parse(localStorage.getItem('lf_st_bypass')||'{}');Object.assign(stats,s);}catch(e){}
+  try{autLvl=localStorage.getItem('lf_aut')||'supervised';setAut(autLvl,true);}catch(e){}
+  loadAgt();
+  refreshHome();
+  renderPipe();
+  renderFU();
+  renderStats();
+  aLog('LeadFlow ready — '+leads.length+' leads in pipeline','ok');
+  setTimeout(updateSvcStatus,600);
+}
+
 /* ══ INIT ════════════════════════════════════════ */
 (async function(){
+  // AUTH BYPASS — direct access mode
+  user={id:'default',email:'mpofum@out.co.za',name:'Mpofuma',token:''};
+  document.getElementById('authWrap').style.display='none';
+  document.getElementById('appWrap').style.display='block';
+  await loadProfile();
+  await loadLeads();
+  bootApp();
+  if(!window._lf_tick) window._lf_tick=setInterval(tick,1000);
+  return;
+  // ORIGINAL AUTH BELOW (disabled)
+  (async function(){
+  // AUTO-BOOT: bypass login
+  user={id:'bypass',email:'mpofum@out.co.za',name:'Mpofuma',token:''};
+  document.getElementById('authWrap').style.display='none';
+  document.getElementById('appWrap').style.display='block';
+  if(!window._lf_tick) window._lf_tick=setInterval(tick,1000);
+  aLog('Loading pipeline...','lb');
+  try{await loadProfile();}catch(e){aLog('Profile: '+e.message,'w');}
+  try{await loadLeads();}catch(e){aLog('Leads: '+e.message,'w');}
+  bootApp();
+  goto('home');
+  return;
+  // original auth (disabled) ↓
   try{
     const s=JSON.parse(localStorage.getItem('lf_s')||'null');
     if(s&&s.id&&s.email){
       // Validate session is still alive before booting
-      const chk=await fetch('https://mtnqgnrcukombrklezhe.supabase.co/auth/v1/user',{headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10bnFnbnJjdWtvbWJya2xlemhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NzY1NzQsImV4cCI6MjA4NzQ1MjU3NH0.Y_RBIjB1N_SEwNaLVg85R5wIRkXY199AiGRdqCzGhz8','Authorization':'Bearer '+s.token}});
-      if(chk.ok){user=s;boot();return;}
-      else{localStorage.removeItem('lf_s');}
-    }
-  }catch(e){}
-  if(!window._lf_tick)window._lf_tick=setInterval(tick,1000);tick();
-  setTimeout(()=>{lucide.createIcons();},200);
-})();
-</script>
-</body>
-</html>
+      const chk=await fetch('https://mtnqgnrcukombrklezhe.supabase.co/auth/v1/user',{headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ
